@@ -1,3 +1,5 @@
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export function PageHeader() {
@@ -110,13 +112,13 @@ export function PageHeader() {
               {" "}
               <Link
                 href="#"
-                className="text-sm px-2 py-1 transition focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:outline-none focus-visible:shadow-outline-indigo rounded-full"
+                className={cn(buttonVariants({ variant: "ghost" }))}
               >
                 Log in
               </Link>{" "}
               <Link
                 href="#"
-                className="rounded-full text-center transition focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:outline-none focus-visible:shadow-outline-indigo px-4 py-2 text-sm bg-indigo-600 text-white hover:bg-indigo-800 inline-flex items-center group gap-px"
+                className={cn(buttonVariants({ variant: "default" }))}
               >
                 {" "}
                 <span>Try for Free</span>{" "}

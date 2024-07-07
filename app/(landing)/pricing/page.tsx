@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Bookany | Pricing",
+  description: "Flexible pricing plans for your next project",
+};
+
 export default function Pricing() {
   return (
     <div className="max-w-screen-xl mx-auto px-5">
