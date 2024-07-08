@@ -11,7 +11,7 @@ export default function MerchantDetail() {
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 flex flex-col overflow-hidden">
         <MerchantImages />
-        <div className="flex-1 flex flex-col p-4 gap-8 overflow-y-auto overflow-x-hidden w-full">
+        <div className="flex-1 flex flex-col gap-8 overflow-y-auto overflow-x-hidden w-full scrollbar-app">
           <MerchantInfo />
           <MerchantServices />
         </div>

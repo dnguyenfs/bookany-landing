@@ -15,7 +15,7 @@ export default function MerchantLayout({
   return (
     <div
       className={cn(
-        "sm:rounded-3xl max-w-xs min-w-full sm:min-w-[500px] sm:my-10 m-auto bg-background sm:shadow h-full overflow-hidden",
+        "sm:rounded-3xl max-w-xs min-w-full sm:min-w-[475px] sm:my-10 m-auto bg-background sm:shadow h-full overflow-hidden",
         "my-0 rounded-none shadow-none"
       )}
     >

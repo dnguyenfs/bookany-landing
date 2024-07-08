@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 
 export function MerchantInfo() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 p-4">
       <h4 className="text-xl font-semibold truncate">
         The Right Spot Urban Space The Right Spot Urban Space
       </h4>
