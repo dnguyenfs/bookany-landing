@@ -14,10 +14,10 @@ export default function BookingPage() {
         <Branding />
         <Steps />
         <div className="flex-1 overflow-y-auto scrollbar-app">
-          {/* <ChooseServices /> */}
+          <ChooseServices />
           {/* <ChooseStaff /> */}
           {/* <ChooseDate /> */}
-          <Confirm />
+          {/* <Confirm /> */}
         </div>
       </div>
       <div className="flex justify-between gap-2 px-4 py-2 items-center shadow">
