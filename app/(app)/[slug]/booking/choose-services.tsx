@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
@@ -19,7 +20,9 @@ export function ChooseServices() {
     >
       <AccordionItem value="item-1">
         <AccordionTrigger className="uppercase px-4 hover:no-underline aria-expanded:bg-primary/20">
-          Color
+          <div>
+            Color <Badge className="py-0.5">2</Badge>
+          </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 divide-y">
           {Array.from({ length: 10 }).map((_, index) => (

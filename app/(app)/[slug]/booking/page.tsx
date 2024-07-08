@@ -4,6 +4,7 @@ import { Branding } from "./branding";
 import { Steps } from "./steps";
 import { ChooseServices } from "./choose-services";
 import { ChooseStaff } from "./choose-staff";
+import { ChooseDate } from "./choose-date";
 
 export default function BookingPage() {
   return (
@@ -12,8 +13,10 @@ export default function BookingPage() {
         <Branding />
         <Steps />
         <div className="flex-1 overflow-y-auto scrollbar-app">
-          {/* <ChooseServices /> */}
-          <ChooseStaff />
+          {/* <ChooseServices />
+          <ChooseStaff /> */}
+
+          <ChooseDate />
         </div>
       </div>
       <div className="flex justify-between gap-2 px-4 py-2 items-center shadow">
