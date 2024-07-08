@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
+import { Footer } from "./footer";
 
 export const metadata: Metadata = {
   title: "Bookany App | Welcome to the Future",
@@ -15,11 +16,12 @@ export default function MerchantLayout({
   return (
     <div
       className={cn(
-        "sm:rounded-3xl max-w-xs min-w-full sm:min-w-[475px] sm:my-10 m-auto bg-background sm:shadow h-full overflow-hidden",
+        "sm:rounded-3xl max-w-xs min-w-full sm:min-w-[475px] sm:my-10 m-auto bg-background sm:shadow h-full overflow-hidden flex flex-col",
         "my-0 rounded-none shadow-none"
       )}
     >
-      {children}
+      <div className="flex-1 overflow-hidden">{children}</div>
+      <Footer />
     </div>
   );
 }
