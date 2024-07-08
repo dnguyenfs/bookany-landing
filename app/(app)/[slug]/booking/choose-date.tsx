@@ -1,5 +1,5 @@
 "use client";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { CalendarXIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import React from "react";
 import {
   convertMinutesToHourMinutes,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 export function ChooseDate() {
   const [date, setDate] = React.useState(new Date());
   const ranges = generateDateRange(generateWeekRange(date));
+  const slots = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 
   return (
     <div className="flex flex-col flex-1 h-full">
@@ -49,8 +50,17 @@ export function ChooseDate() {
         </span>
       </div>
       <div className="flex flex-col flex-1 overflow-y-auto scrollbar-app">
-        {[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].map(
-          (slot) => {
+        {slots.length === 0 && (
+          <div className="flex justify-center items-center flex-col flex-1 gap-2">
+            <p className="text-base font-semibold">No Available slots</p>
+            <p className="text-sm">
+              Merchant is busy today. Please try another date
+            </p>
+            <CalendarXIcon className="w-24 h-24 text-muted-foreground" />
+          </div>
+        )}
+        {slots.length > 0 &&
+          slots.map((slot) => {
             return (
               <div
                 key={slot}
@@ -64,8 +74,7 @@ export function ChooseDate() {
                 <ChevronRightIcon className="w-4 h-4 text-muted-foreground" />
               </div>
             );
-          }
-        )}
+          })}
       </div>
     </div>
   );

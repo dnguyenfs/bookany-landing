@@ -7,7 +7,7 @@ export function Steps() {
     <div className="flex items-center justify-between gap-2 px-3 pb-2 shadow-sm">
       <Button
         className="text-xs md:text-sm px-1 md:px-3 h-6 md:h-8"
-        variant={"default"}
+        variant={"ghost"}
       >
         Services
       </Button>
@@ -28,7 +28,7 @@ export function Steps() {
       <ChevronRightIcon className="w-3 h-3 flex-none" />
       <Button
         className="text-xs md:text-sm px-1 md:px-3 h-6 md:h-8"
-        variant={"ghost"}
+        variant={"default"}
       >
         Confirm
       </Button>
