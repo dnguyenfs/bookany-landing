@@ -62,7 +62,6 @@ export function MerchantImages() {
             >
               <Image
                 src={imageUrl}
-                objectFit="cover"
                 fill
                 className="w-full h-full top-0 left-0 object-cover"
                 alt="Astronaut in the air"
