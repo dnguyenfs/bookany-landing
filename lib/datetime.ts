@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 export function generateDateRange({
   start,
   end,
@@ -44,4 +46,8 @@ export function convertMinutesToHourMinutes(
       mins < 10 ? "0" + mins : mins
     }`;
   }
+}
+
+export function getShortDate(date: Date) {
+  return format(date, "dd/MM/yyyy");
 }
