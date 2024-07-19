@@ -14,11 +14,25 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { HeartIcon, MoveLeftIcon } from "lucide-react";
+import { IMerchant } from "@/types/merchant";
+import { getImagePathUrl } from "@/lib/image";
 
-export function MerchantImages() {
+type Props = {
+  merchant: IMerchant;
+};
+
+export function MerchantImages({ merchant }: Props) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
+
+  const coverUrl = merchant.coverUrl ?? "";
+
+  const photos =
+    merchant.fileFolders.find((f) => f.subName === "photos")?.files ?? [];
+  const photoUrls = photos.map((f) => getImagePathUrl(f.key));
+
+  const covers = [coverUrl, ...photoUrls].filter(Boolean);
 
   React.useEffect(() => {
     if (!api) {
@@ -34,7 +48,7 @@ export function MerchantImages() {
   }, [api]);
 
   return (
-    <div>
+    <div className="min-h-[200px]">
       <Carousel setApi={setApi} className="w-full relative">
         <div className="absolute top-4 left-0 w-full px-4 z-10">
           <div className="flex items-center justify-between">
@@ -48,11 +62,7 @@ export function MerchantImages() {
           </div>
         </div>
         <CarouselContent>
-          {[
-            "https://www.checkatrade.com/blog/wp-content/uploads/2023/10/salon-glamorous.jpg",
-            "https://img.freepik.com/premium-photo/modern-abstract-black-retro-styled-beauty-salon-with-home-interior-design_168085-77.jpg",
-            "https://images.fresha.com/locations/location-profile-images/273174/376993/94e924a3-22d5-4268-9e1f-cebda302da17.jpg?class=width-small",
-          ].map((imageUrl, index) => (
+          {covers.map((imageUrl, index) => (
             <CarouselItem
               key={index}
               className={cn(

@@ -1,14 +1,17 @@
 import { Badge } from "@/components/ui/badge";
+import { IMerchant } from "@/types/merchant";
 
-export function MerchantInfo() {
+type Props = {
+  merchant: IMerchant;
+};
+
+export function MerchantInfo({ merchant }: Props) {
   return (
     <div className="flex flex-col gap-3 p-4">
-      <h4 className="text-xl font-semibold truncate">
-        The Right Spot Urban Space The Right Spot Urban Space
-      </h4>
+      <h4 className="text-xl font-semibold truncate">{merchant.name}</h4>
       <div className="flex flex-col gap-1">
         <p className="text-muted-foreground text-sm truncate">
-          Central, Hong Kong island
+          {merchant.address}
         </p>
         <p className="text-muted-foreground text-sm truncate">
           Open until 20:00
