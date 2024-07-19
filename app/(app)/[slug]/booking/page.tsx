@@ -1,65 +1,50 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import { Branding } from "./branding";
-import { Steps } from "./steps";
-import { ChooseServices } from "./choose-services";
-import { ChooseStaff } from "./choose-staff";
-import { ChooseDate } from "./choose-date";
-import { Confirm } from "./confirm";
-import { BookingStoreProvider, useBookingStore } from "./context";
-import { LoaderIcon } from "lucide-react";
+import { Metadata, ResolvingMetadata } from "next";
+import { getMerchantInfoApi } from "@/api/merchant";
+import { getCategoriesApi } from "@/api/categories";
+import Booking from "./booking";
+import { getStaffsApi } from "@/api/staff";
 
-export default function BookingPage() {
-  return (
-    <BookingStoreProvider>
-      <BookingApp />
-    </BookingStoreProvider>
-  );
+type Props = {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export async function generateMetadata(
+  { params, searchParams }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const slug = params.slug;
+  // fetch data
+  const merchant = await getMerchantInfoApi(params.slug);
+
+  // optionally access and extend (rather than replace) parent metadata
+  const logoUrl = merchant.logoUrl ?? "";
+  const coverUrl = merchant.coverUrl ?? "";
+
+  return {
+    title: `Bookany | Booking for ${merchant.name}`,
+    description:
+      merchant.description ??
+      "Bookany is a SaaS platform for creating and managing your online booking system",
+    openGraph: {
+      images: [logoUrl, coverUrl],
+    },
+  };
 }
 
-export function BookingApp() {
-  const step = useBookingStore((s) => s.step);
-  const setStep = useBookingStore((s) => s.setStep);
-  const _hasHydrated = useBookingStore((s) => s._hasHydrated);
-  const nextStep = () => {
-    if (step === "services") {
-      setStep("staff");
-    } else if (step === "staff") {
-      setStep("date");
-    } else if (step === "date") {
-      setStep("confirm");
-    }
-  };
-
-  if (!_hasHydrated) {
-    return (
-      <div className="flex flex-col h-full w-full justify-center items-center text-primary">
-        <LoaderIcon className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+export default async function BookingPage({ params }: Props) {
+  const [merchant, categories, staff] = await Promise.all([
+    getMerchantInfoApi(params.slug),
+    getCategoriesApi(params.slug),
+    getStaffsApi(params.slug),
+  ]);
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Branding />
-        <Steps />
-        <div className="flex-1 overflow-y-auto scrollbar-app">
-          {step === "services" && <ChooseServices />}
-          {step === "staff" && <ChooseStaff />}
-          {step === "date" && <ChooseDate />}
-          {step === "confirm" && <Confirm />}
-        </div>
-      </div>
-      <div className="flex justify-between gap-2 px-4 py-2 items-center shadow">
-        <div className="flex flex-col">
-          <p className="text-sm font-semibold">CA$150</p>
-          <p className="text-muted-foreground text-xs">2 services • 2 hours</p>
-        </div>
-        <Button onClick={nextStep} variant={"default"}>
-          Continue
-        </Button>
-      </div>
-    </div>
+    <Booking
+      merchant={merchant}
+      categories={categories}
+      slug={params.slug}
+      staff={staff}
+    />
   );
 }

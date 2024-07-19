@@ -19,9 +19,9 @@ export function hexToHSL(hex: string) {
 
   let max = Math.max(r, g, b),
     min = Math.min(r, g, b);
-  let h: number,
-    s: number,
-    l: number = (max + min) / 2;
+  let h: number = (max + min) / 2;
+  let s: number = (max + min) / 2;
+  let l: number = (max + min) / 2;
 
   if (max == min) {
     h = s = 0; // achromatic

@@ -27,8 +27,6 @@ export default function Merchant({ merchant, categories }: Props) {
   const merchantHexColor =
     merchant.settings.hexColor ?? DefaultMerchantOnlineColorHex;
 
-  console.log("merchantHexColor", merchantHexColor);
-
   useEffect(() => {
     const initAppColor = async () => {
       if (merchantHexColor) {
