@@ -1,16 +1,9 @@
 import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
-import { Footer } from "./footer";
-
-export const metadata: Metadata = {
-  title: "Bookany App | Welcome to the Future",
-  description:
-    "Bookany is a SaaS platform for creating and managing your online booking system",
-};
-
-export default function MerchantLayout({
+export default async function MerchantLayout({
+  params,
   children,
 }: Readonly<{
+  params: { slug: string };
   children: React.ReactNode;
 }>) {
   return (
@@ -21,7 +14,6 @@ export default function MerchantLayout({
       )}
     >
       <div className="flex-1 overflow-hidden">{children}</div>
-      <Footer />
     </div>
   );
 }

@@ -79,7 +79,10 @@ export function MerchantImages({ merchant }: Props) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <Badge className="absolute bottom-2 right-2 bg-accent-foreground shadow">
+        <Badge
+          variant={"outline"}
+          className="absolute bottom-2 right-2 border-primary shadow"
+        >
           {current} / {count}
         </Badge>
       </Carousel>
