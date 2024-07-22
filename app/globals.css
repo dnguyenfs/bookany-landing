@@ -70,13 +70,16 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
 
   .scrollbar-app {
     @apply scrollbar scrollbar-thumb-slate-300 scrollbar-thumb-rounded-full scrollbar-w-2 scrollbar-h-2 dark:scrollbar-thumb-gray-300;
   }
+  
+  body {
+    @apply bg-background text-foreground scrollbar scrollbar-thumb-slate-300 scrollbar-thumb-rounded-full scrollbar-w-2 scrollbar-h-2 dark:scrollbar-thumb-gray-300
+  }
+
+  
 }
 
 .no-scrollbar::-webkit-scrollbar {

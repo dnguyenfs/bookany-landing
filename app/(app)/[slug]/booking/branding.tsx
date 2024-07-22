@@ -8,7 +8,7 @@ type Props = {
 export function Branding({ merchant }: Props) {
   return (
     <div className="flex justify-between gap-2 p-4 items-center">
-      <h4 className="text-xl font-semibold truncate text-primary">
+      <h4 className="text-xl font-semibold truncate text-primary font-mono">
         {merchant.name}
       </h4>
       <div className="flex flex-col items-end">

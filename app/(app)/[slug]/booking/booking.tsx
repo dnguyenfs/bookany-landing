@@ -15,6 +15,7 @@ import { IStaff } from "@/types/staff";
 import { useEffect, useState } from "react";
 import { DefaultMerchantOnlineColorHex } from "@/const";
 import { hexToHSL } from "@/lib/color";
+import { Footer } from "../footer";
 
 type Props = {
   merchant: IMerchant;
@@ -76,32 +77,37 @@ export function BookingApp({ merchant, slug, categories, staff }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Branding merchant={merchant} />
-        <Steps />
-        <div className="flex-1 overflow-y-auto scrollbar-app">
-          {step === "services" && (
-            <ChooseServices
-              categories={categories}
-              merchant={merchant}
-              type="booking"
-            />
-          )}
-          {step === "staff" && <ChooseStaff />}
-          {step === "date" && <ChooseDate />}
-          {step === "confirm" && <Confirm />}
+    <div className="flex h-full w-full flex-col">
+      <div className="flex flex-col h-full w-full">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Branding merchant={merchant} />
+          <Steps />
+          <div className="flex-1 overflow-y-auto scrollbar-app">
+            {step === "services" && (
+              <ChooseServices
+                categories={categories}
+                merchant={merchant}
+                type="booking"
+              />
+            )}
+            {step === "staff" && <ChooseStaff />}
+            {step === "date" && <ChooseDate />}
+            {step === "confirm" && <Confirm />}
+          </div>
+        </div>
+        <div className="flex justify-between gap-2 px-4 py-2 items-center border-t">
+          <div className="flex flex-col">
+            <p className="text-sm font-semibold">CA$150</p>
+            <p className="text-muted-foreground text-xs">
+              2 services • 2 hours
+            </p>
+          </div>
+          <Button onClick={nextStep} variant={"default"}>
+            Continue
+          </Button>
         </div>
       </div>
-      <div className="flex justify-between gap-2 px-4 py-2 items-center shadow">
-        <div className="flex flex-col">
-          <p className="text-sm font-semibold">CA$150</p>
-          <p className="text-muted-foreground text-xs">2 services • 2 hours</p>
-        </div>
-        <Button onClick={nextStep} variant={"default"}>
-          Continue
-        </Button>
-      </div>
+      <Footer />
     </div>
   );
 }

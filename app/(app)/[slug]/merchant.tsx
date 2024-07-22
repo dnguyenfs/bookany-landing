@@ -27,6 +27,8 @@ export default function Merchant({ merchant, categories }: Props) {
   const merchantHexColor =
     merchant.settings.hexColor ?? DefaultMerchantOnlineColorHex;
 
+  const enableOnlineBooking = merchant.settings.enableOnlineBooking;
+
   useEffect(() => {
     const initAppColor = async () => {
       if (merchantHexColor) {
@@ -59,7 +61,9 @@ export default function Merchant({ merchant, categories }: Props) {
             <p className="text-muted-foreground text-sm">
               {servicesCount} services available
             </p>
-            <Button variant={"default"}>Book Now</Button>
+            {enableOnlineBooking && (
+              <Button variant={"default"}>Book Now</Button>
+            )}
           </div>
         </div>
       </div>

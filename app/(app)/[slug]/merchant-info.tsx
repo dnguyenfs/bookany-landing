@@ -8,7 +8,9 @@ type Props = {
 export function MerchantInfo({ merchant }: Props) {
   return (
     <div className="flex flex-col gap-3 p-4">
-      <h4 className="text-xl font-semibold truncate">{merchant.name}</h4>
+      <h4 className="text-xl font-semibold truncate text-primary  ">
+        {merchant.name}
+      </h4>
       <div className="flex flex-col gap-1">
         <p className="text-muted-foreground text-sm truncate">
           {merchant.address}

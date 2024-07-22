@@ -19,6 +19,8 @@ type Props = {
 };
 
 export function ChooseServices({ categories, merchant, type }: Props) {
+  const enableOnlineBooking = merchant.settings.enableOnlineBooking;
+
   return (
     <Accordion
       defaultValue={categories[0].id}
@@ -28,9 +30,16 @@ export function ChooseServices({ categories, merchant, type }: Props) {
     >
       {categories.map((category) => (
         <AccordionItem key={category.id} value={category.id}>
-          <AccordionTrigger className="uppercase px-4 hover:no-underline aria-expanded:bg-primary/20">
-            <div>
-              {category.name} <Badge className="py-0.5">2</Badge>
+          <AccordionTrigger className="px-4 hover:no-underline aria-expanded:bg-primary/10 gap-5">
+            <div className="text-start">
+              <p className="text-sm uppercase">
+                {category.name} <Badge className="py-0.5">2</Badge>
+              </p>
+              {category.description && (
+                <p className="text-muted-foreground text-xs line-clamp-3">
+                  {category.description ?? "Lorem ipsum dolor sit amet"}
+                </p>
+              )}
             </div>
           </AccordionTrigger>
           <AccordionContent className="space-y-4 divide-y">
@@ -41,12 +50,20 @@ export function ChooseServices({ categories, merchant, type }: Props) {
               >
                 <div className="flex flex-col gap-1">
                   <h5 className="font-semibold">{service.name}</h5>
-                  <p className="text-muted-foreground text-xs">
-                    {service.duration} mins
+
+                  {service.description && (
+                    <p className="text-muted-foreground text-xs line-clamp-3">
+                      {service.description ?? "Lorem ipsum dolor sit amet"}
+                    </p>
+                  )}
+
+                  <p className="text-xs">{service.duration} mins</p>
+                  <p className="text-xs text-muted-foreground">
+                    from {merchant.currency}870
                   </p>
-                  <p className="text-xs">from {merchant.currency}870</p>
                 </div>
-                {type === "preview" ? (
+
+                {enableOnlineBooking && type === "preview" ? (
                   <Link href={`/${merchant.slug}/booking`}>
                     <Button size={"sm"}>Book</Button>
                   </Link>
@@ -56,7 +73,7 @@ export function ChooseServices({ categories, merchant, type }: Props) {
                     className="w-6 h-6 rounded flex-none"
                     variant={"outline"}
                   >
-                    <PlusIcon className="w-4 h-4" />
+                    <PlusIcon className="w-4 h-4 text-muted-foreground" />
                   </Button>
                 )}
               </div>
