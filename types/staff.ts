@@ -32,6 +32,7 @@ export const IStaff = z.object({
   createdUserId: z.string(),
   updatedUserId: z.string(),
   serviceStaffs: z.array(IServiceStaffs),
+  imageKey: z.string().nullable(),
 });
 
 export type IStaff = z.infer<typeof IStaff>;

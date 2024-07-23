@@ -51,3 +51,11 @@ export function convertMinutesToHourMinutes(
 export function getShortDate(date: Date) {
   return format(date, "dd/MM/yyyy");
 }
+
+export function castMinutesToHoursString(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0
+    ? `${hours}hour${hours > 1 ? "s" : ""} ${mins}min${mins > 1 ? "s" : ""}`
+    : `${mins}min${mins > 1 ? "s" : ""}`;
+}

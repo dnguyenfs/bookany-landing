@@ -1,11 +1,8 @@
-import { IMerchant } from "@/types/merchant";
-import Image from "next/image";
+import { useBookingStore } from "./context";
 
-type Props = {
-  merchant: IMerchant;
-};
+export function Branding() {
+  const merchant = useBookingStore((s) => s.merchant);
 
-export function Branding({ merchant }: Props) {
   return (
     <div className="flex justify-between gap-2 p-4 items-center">
       <h4 className="text-xl font-semibold truncate text-primary font-mono">

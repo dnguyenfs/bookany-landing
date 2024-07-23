@@ -167,6 +167,33 @@ export function Confirm() {
                 )}
               />
             </div>
+            <div className="col-span-2 flex flex-col gap-2 mt-4">
+              <p className="text-sm font-semibold">Cancellation policy:</p>
+              <p className="text-sm">
+                For appointments canceled within 24 hours or "no-show"
+                appointments, We charge 100% of the service total.
+              </p>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <Switch id="agree-cancellation-policy" />
+                        <Label
+                          htmlFor="agree-cancellation-policy"
+                          className="text-sm cursor-pointer"
+                        >
+                          I agree to the cancellation policy
+                        </Label>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className="col-span-2 flex flex-col gap-2">
               <FormField
                 control={form.control}

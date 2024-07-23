@@ -1,71 +1,177 @@
 import { getShortDate } from "@/lib/datetime";
+import { ICategory } from "@/types/category";
+import { IMerchant } from "@/types/merchant";
+import { IService } from "@/types/service";
+import { IStaff } from "@/types/staff";
+import { toast } from "sonner";
 import { z } from "zod";
 import { StoreApi, Mutate, UseBoundStore, create } from "zustand";
 import createContext from "zustand/context";
-import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
 const IStep = z.enum(["services", "staff", "date", "confirm"]);
 type IStep = z.infer<typeof IStep>;
 
-const IService = z.object({
+const IServiceOption = z.object({
   id: z.string(),
+  categoryId: z.string(),
   serviceOptionIds: z.array(z.string()),
 });
 
+const IExternalStates = z.object({
+  merchant: IMerchant,
+  slug: z.string(),
+  categories: z.array(ICategory),
+  staff: z.array(IStaff),
+  serviceMapping: z.map(z.string(), IService),
+  staffMapping: z.map(z.string(), IStaff),
+});
+
+type IExternalStates = z.infer<typeof IExternalStates>;
+
 const IInitStates = z.object({
-  _hasHydrated: z.boolean(),
   step: IStep,
-  services: z.array(IService),
+  services: z.array(IServiceOption),
   staffId: z.string().nullable(),
-  date: z.union([z.date(), z.string()]),
+  date: z.date(),
+  beginAt: z.number().nullable(),
 });
 
 type IInitStates = z.infer<typeof IInitStates>;
 
-type IBookingState = IInitStates & {
-  setStep: (step: IStep) => void;
-};
+type IBookingState = IExternalStates &
+  IInitStates & {
+    setStep: (step: IStep) => void;
+    nextStep: () => void;
+    prevStep: () => void;
+    selectService: (categoryId: string, serviceId: string) => void;
+    selectStaff: (staffId: string) => void;
+    selectDate: (date: Date) => void;
+  };
 
-type UseBearStore = UseBoundStore<
-  Mutate<StoreApi<IBookingState>, [["zustand/persist", IBookingState]]>
->;
+type UseBearStore = UseBoundStore<Mutate<StoreApi<IBookingState>, []>>;
 
 const BookingContext = createContext<UseBearStore>();
 
 export const useBookingStore = BookingContext.useStore;
 
+export const isSelectedServiceSelector =
+  (serviceId: string) => (state: IBookingState) =>
+    state.services.findIndex((service) => service.id === serviceId) > -1;
+
+export const serviceCountByCategoryIdSelector =
+  (categoryId: string) => (state: IBookingState) =>
+    state.services.filter((service) => service.categoryId === categoryId)
+      .length;
+
+export const matchStaffSelector = (state: IBookingState) => {
+  const serviceIds = state.services.map((service) => service.id);
+  return state.staff.filter((staff) => {
+    const staffServiceIds = staff.serviceStaffs.map(
+      (serviceStaff) => serviceStaff.serviceId
+    );
+    return serviceIds.every((serviceId) => staffServiceIds.includes(serviceId));
+  });
+};
+
 export const BookingStoreProvider = ({
   children,
+  initialState,
 }: {
+  initialState: IExternalStates;
   children: React.ReactNode;
 }) => {
   return (
     <BookingContext.Provider
       createStore={() =>
         create<IBookingState>()(
-          persist(
-            immer((set) => ({
-              _hasHydrated: false,
-              step: "services",
-              staffId: null,
-              services: [],
-              date: getShortDate(new Date()),
-              setStep: (step) =>
-                set((s) => {
-                  s.step = step;
-                  return s;
-                }),
-            })),
-            {
-              name: "bk-draft-order",
-              onRehydrateStorage: (localState) => (state) => {
-                if (state) {
-                  state._hasHydrated = true;
+          immer((set) => ({
+            ...initialState,
+            _hasHydrated: false,
+            step: "services",
+            staffId: null,
+            services: [],
+            date: new Date(),
+            beginAt: null,
+            setStep: (step) =>
+              set((s) => {
+                s.step = step;
+                return s;
+              }),
+            nextStep: () =>
+              set((s) => {
+                switch (s.step) {
+                  case "services": {
+                    const serviceLength = s.services.length;
+                    if (serviceLength === 0) {
+                      toast.info("Please select at least one service");
+                      return s;
+                    }
+
+                    s.step = "staff";
+                    return s;
+                  }
+                  case "staff": {
+                    const staffId = s.staffId;
+                    if (!staffId) {
+                      toast.info("Please select a staff");
+                      return s;
+                    }
+
+                    s.step = "date";
+                    return s;
+                  }
+
+                  case "date": {
+                    const date = s.date;
+                    const beginAt = s.beginAt;
+                    if (!date) {
+                      toast.info("Please select a date");
+                      return s;
+                    }
+
+                    if (!beginAt) {
+                      toast.info("Please select a time");
+                      return s;
+                    }
+
+                    s.step = "confirm";
+                    return s;
+                  }
+
+                  default:
+                    return s;
                 }
-              },
-            }
-          )
+              }),
+            prevStep: () =>
+              set((s) => {
+                s.step = s.step === "staff" ? "services" : "staff";
+                return s;
+              }),
+            selectService: (categoryId, serviceId) =>
+              set((s) => {
+                const isExisted =
+                  s.services.findIndex((service) => service.id === serviceId) >
+                  -1;
+                s.services = isExisted
+                  ? s.services.filter((service) => service.id !== serviceId)
+                  : [
+                      ...s.services,
+                      { id: serviceId, serviceOptionIds: [], categoryId },
+                    ];
+                return s;
+              }),
+            selectStaff: (staffId) =>
+              set((s) => {
+                s.staffId = staffId;
+                return s;
+              }),
+            selectDate: (date) =>
+              set((s) => {
+                s.date = date;
+                return s;
+              }),
+          }))
         )
       }
     >

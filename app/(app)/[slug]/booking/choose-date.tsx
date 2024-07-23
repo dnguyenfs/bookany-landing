@@ -9,9 +9,10 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { useBookingStore } from "./context";
 
 export function ChooseDate() {
-  const [date, setDate] = React.useState(new Date());
+  const date = useBookingStore((s) => s.date);
   const ranges = generateDateRange(generateWeekRange(date));
   const slots = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 
@@ -20,7 +21,7 @@ export function ChooseDate() {
       <div className="flex flex-col p-4 gap-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <ChevronLeftIcon className="w-5 h-5 text-muted-foreground" />
-          <h4 className="text-sm font-semibold">July 20204</h4>
+          <h4 className="text-sm font-semibold">July 2024</h4>
           <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
         </div>
         <div className="flex items-center justify-between gap-2">

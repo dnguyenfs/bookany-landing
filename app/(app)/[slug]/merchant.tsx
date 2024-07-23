@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { hexToHSL } from "@/lib/color";
 import { DefaultMerchantOnlineColorHex } from "@/const";
 import { Footer } from "./footer";
+import { Services } from "@/app/components/services";
 
 type Props = {
   merchant: IMerchant;
@@ -54,7 +55,7 @@ export default function Merchant({ merchant, categories }: Props) {
             <MerchantImages merchant={merchant} />
             <div className="flex-1 flex flex-col gap-8 overflow-y-auto overflow-x-hidden w-full scrollbar-app">
               <MerchantInfo merchant={merchant} />
-              <MerchantServices merchant={merchant} categories={categories} />
+              <Services merchant={merchant} categories={categories} />
             </div>
           </div>
           <div className="flex justify-between gap-2 px-4 py-2 items-center shadow">
