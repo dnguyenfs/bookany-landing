@@ -89,7 +89,7 @@ export function BookingApp() {
         </div>
         <CartTracking />
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

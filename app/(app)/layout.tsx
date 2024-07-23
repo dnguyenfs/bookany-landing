@@ -13,7 +13,7 @@ export default function MerchantLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="flex max-h-[-webkit-fill-available] h-screen flex-col bg-accent">
+    <main className="flex max-h-[-webkit-fill-available] h-screen flex-col bg-accent select-none">
       {children}
     </main>
   );

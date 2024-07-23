@@ -2,8 +2,10 @@ import { ChevronRightIcon, UsersIcon } from "lucide-react";
 import Image from "next/image";
 import { matchStaffSelector, useBookingStore } from "./context";
 import { getImagePathUrl } from "@/lib/image";
+import { cn } from "@/lib/utils";
 
 export function ChooseStaff() {
+  const staffId = useBookingStore((s) => s.staffId);
   const staffList = useBookingStore(matchStaffSelector);
   const selectStaff = useBookingStore((s) => s.selectStaff);
   const nextStep = useBookingStore((s) => s.nextStep);
@@ -17,7 +19,12 @@ export function ChooseStaff() {
     <div className="flex flex-col divide-y">
       <div
         onClick={() => handleSelectStaff("_system")}
-        className="flex items-center justify-between gap-8 px-4 hover:bg-primary/10 py-4 cursor-pointer"
+        className={cn(
+          "flex items-center justify-between gap-8 px-4 hover:bg-primary/10 py-4 cursor-pointer",
+          {
+            "bg-primary/10": staffId === "_system",
+          }
+        )}
       >
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full border flex items-center justify-center">
@@ -33,7 +40,12 @@ export function ChooseStaff() {
       {staffList.map((staff, index) => (
         <div
           key={index}
-          className="flex items-center justify-between gap-8 px-4 hover:bg-primary/10 py-4 cursor-pointer"
+          className={cn(
+            "flex items-center justify-between gap-8 px-4 hover:bg-primary/10 py-4 cursor-pointer",
+            {
+              "bg-primary/10": staffId === staff.id,
+            }
+          )}
           onClick={() => handleSelectStaff(staff.id)}
         >
           <div className="flex items-center gap-2">

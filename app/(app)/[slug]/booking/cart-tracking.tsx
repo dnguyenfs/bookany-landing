@@ -13,7 +13,7 @@ export default function CartTracking() {
   const prevStep = useBookingStore((s) => s.prevStep);
 
   const staffId = useBookingStore((s) => s.staffId);
-  const showCart = step !== "confirm" && services.length > 0;
+  const showCart = services.length > 0;
 
   if (!showCart) return null;
 
@@ -56,12 +56,12 @@ export default function CartTracking() {
       </div>
       <div className="flex gap-2 items-center">
         {showPrev && (
-          <Button size="sm" onClick={prevStep} variant={"outline"}>
+          <Button onClick={prevStep} variant={"outline"}>
             Prev
           </Button>
         )}
         {showNext && (
-          <Button size="sm" onClick={nextStep} variant={"default"}>
+          <Button onClick={nextStep} variant={"default"}>
             Continue
           </Button>
         )}

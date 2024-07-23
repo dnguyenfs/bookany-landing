@@ -16,12 +16,9 @@ import {
   useBookingStore,
 } from "./context";
 import { ICategory } from "@/types/category";
+import { cn } from "@/lib/utils";
 
-type Props = {
-  type: "preview" | "booking";
-};
-
-export function ChooseServices({ type }: Props) {
+export function ChooseServices() {
   const categories = useBookingStore((s) => s.categories);
 
   return (
@@ -32,19 +29,13 @@ export function ChooseServices({ type }: Props) {
       className="w-full"
     >
       {categories.map((category) => (
-        <Category key={category.id} category={category} type={type} />
+        <Category key={category.id} category={category} />
       ))}
     </Accordion>
   );
 }
 
-function Category({
-  category,
-  type,
-}: {
-  category: ICategory;
-  type: "preview" | "booking";
-}) {
+function Category({ category }: { category: ICategory }) {
   const count = useBookingStore(serviceCountByCategoryIdSelector(category.id));
 
   return (
@@ -64,12 +55,7 @@ function Category({
       </AccordionTrigger>
       <AccordionContent className="space-y-4 divide-y">
         {category.services.map((service) => (
-          <Service
-            category={category}
-            type={type}
-            key={service.id}
-            service={service}
-          />
+          <Service category={category} key={service.id} service={service} />
         ))}
       </AccordionContent>
     </AccordionItem>
@@ -78,12 +64,10 @@ function Category({
 
 function Service({
   service,
-  type,
   category,
 }: {
   service: IService;
   category: ICategory;
-  type: "preview" | "booking";
 }) {
   const merchant = useBookingStore((s) => s.merchant);
   const selectService = useBookingStore((s) => s.selectService);
@@ -93,7 +77,10 @@ function Service({
   return (
     <div
       key={service.id}
-      className="flex items-center justify-between gap-8 pt-4 px-4"
+      className={cn("flex items-center justify-between gap-8 pt-4 px-4", {
+        "pointer-events-none": !enableOnlineBooking,
+      })}
+      onClick={() => selectService(category.id, service.id)}
     >
       <div className="flex flex-col gap-1">
         <h5 className="font-semibold">{service.name}</h5>
@@ -111,16 +98,11 @@ function Service({
         </p>
       </div>
 
-      {enableOnlineBooking && type === "preview" ? (
-        <Link href={`/${merchant.slug}/booking`}>
-          <Button size={"sm"}>Book</Button>
-        </Link>
-      ) : (
+      {enableOnlineBooking && (
         <Button
           size="icon"
           className="w-6 h-6 rounded flex-none"
           variant={isSelected ? "ghost" : "outline"}
-          onClick={() => selectService(category.id, service.id)}
         >
           {isSelected ? (
             <CheckIcon className="w-6 h-6 text-primary" />

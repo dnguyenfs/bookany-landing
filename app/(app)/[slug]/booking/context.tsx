@@ -47,6 +47,7 @@ type IBookingState = IExternalStates &
     selectService: (categoryId: string, serviceId: string) => void;
     selectStaff: (staffId: string) => void;
     selectDate: (date: Date) => void;
+    selectBeginAt: (beginAt: number | null) => void;
   };
 
 type UseBearStore = UseBoundStore<Mutate<StoreApi<IBookingState>, []>>;
@@ -145,8 +146,22 @@ export const BookingStoreProvider = ({
               }),
             prevStep: () =>
               set((s) => {
-                s.step = s.step === "staff" ? "services" : "staff";
-                return s;
+                switch (s.step) {
+                  case "confirm": {
+                    s.step = "date";
+                    return s;
+                  }
+                  case "date": {
+                    s.step = "staff";
+                    return s;
+                  }
+                  case "staff": {
+                    s.step = "services";
+                    return s;
+                  }
+                  default:
+                    return s;
+                }
               }),
             selectService: (categoryId, serviceId) =>
               set((s) => {
@@ -159,6 +174,11 @@ export const BookingStoreProvider = ({
                       ...s.services,
                       { id: serviceId, serviceOptionIds: [], categoryId },
                     ];
+
+                s.staffId = null;
+                s.date = new Date();
+                s.beginAt = null;
+
                 return s;
               }),
             selectStaff: (staffId) =>
@@ -169,6 +189,11 @@ export const BookingStoreProvider = ({
             selectDate: (date) =>
               set((s) => {
                 s.date = date;
+                return s;
+              }),
+            selectBeginAt: (beginAt) =>
+              set((s) => {
+                s.beginAt = beginAt;
                 return s;
               }),
           }))

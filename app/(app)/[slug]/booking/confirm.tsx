@@ -2,12 +2,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,6 +17,9 @@ import { PhoneInput } from "@/components/phone-input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useBookingStore } from "./context";
+import { format } from "date-fns";
+import { convertMinutesToHourMinutes } from "@/lib/datetime";
 
 const formSchema = z.object({
   firstname: z.string().min(2, {
@@ -29,9 +29,18 @@ const formSchema = z.object({
   phone: z.any(),
   email: z.string().email("Invalid email"),
   note: z.string(),
+  agreePolicy: z.boolean(),
 });
 
 export function Confirm() {
+  const merchant = useBookingStore((s) => s.merchant);
+  const date = useBookingStore((s) => s.date);
+  const staffId = useBookingStore((s) => s.staffId);
+  const services = useBookingStore((s) => s.services);
+  const serviceMapping = useBookingStore((s) => s.serviceMapping);
+  const staffMapping = useBookingStore((s) => s.staffMapping);
+  const beginAt = useBookingStore((s) => s.beginAt);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,12 +49,11 @@ export function Confirm() {
       phone: "",
       email: "",
       note: "",
+      agreePolicy: true,
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     console.log(values);
   }
 
@@ -53,14 +61,36 @@ export function Confirm() {
     <Form {...form}>
       <div className="flex flex-col">
         <div className="flex flex-col justify-center items-center gap-6 p-4 bg-accent">
-          <span className="text-sm">Tuesday, July 8, 2024</span>
+          <span className="text-sm">{format(date, "EEEE, MMMM dd, yyyy")}</span>
           <div className="flex flex-col items-center justify-center">
-            <p className="text-sm font-semibold">Gloss / Toner (90$)</p>
-            <p className="text-sm">(Barber cut, Short/pixie Haircut)</p>
-            <p className="text-sm">
-              with <span className="font-semibold">Neesha</span> at{" "}
-              <span className="font-semibold">12:00 pm</span>
-            </p>
+            {services.map((sv) => {
+              const service = serviceMapping.get(sv.id);
+              if (!service) return null;
+              return (
+                <>
+                  <p className="text-sm font-semibold">
+                    {service.name} ({service.price}
+                    {merchant.currency})
+                  </p>
+                  {/* <p className="text-sm">(Barber cut, Short/pixie Haircut)</p> */}
+                </>
+              );
+            })}
+
+            {staffId && (
+              <p className="text-sm">
+                with{" "}
+                <span className="font-semibold">
+                  {staffId === "_system"
+                    ? "Anyone"
+                    : staffMapping.get(staffId)?.name}
+                </span>{" "}
+                at{" "}
+                <span className="font-semibold">
+                  {convertMinutesToHourMinutes(beginAt ?? 0, true)}
+                </span>
+              </p>
+            )}
           </div>
         </div>
         <div className="">
@@ -114,6 +144,7 @@ export function Confirm() {
                           }
                           field.onChange(value);
                         }}
+                        countryCode={merchant.countryCode}
                         className={cn({
                           "!ring-red-500":
                             field.value && !isValidPhoneNumber(field.value),
@@ -140,6 +171,7 @@ export function Confirm() {
                 )}
               />
             </div>
+
             <div className="col-span-2 flex flex-col gap-2 mt-4">
               <p className="text-sm font-semibold">Cancellation policy:</p>
               <p className="text-sm">
@@ -148,39 +180,15 @@ export function Confirm() {
               </p>
               <FormField
                 control={form.control}
-                name="email"
+                name="agreePolicy"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <div className="flex items-center gap-2">
-                        <Switch id="agree-cancellation-policy" />
-                        <Label
-                          htmlFor="agree-cancellation-policy"
-                          className="text-sm cursor-pointer"
-                        >
-                          I agree to the cancellation policy
-                        </Label>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="col-span-2 flex flex-col gap-2 mt-4">
-              <p className="text-sm font-semibold">Cancellation policy:</p>
-              <p className="text-sm">
-                For appointments canceled within 24 hours or "no-show"
-                appointments, We charge 100% of the service total.
-              </p>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex items-center gap-2">
-                        <Switch id="agree-cancellation-policy" />
+                        <Switch
+                          checked={field.value}
+                          id="agree-cancellation-policy"
+                        />
                         <Label
                           htmlFor="agree-cancellation-policy"
                           className="text-sm cursor-pointer"

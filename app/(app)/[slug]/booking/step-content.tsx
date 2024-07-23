@@ -8,7 +8,7 @@ export default function StepContent() {
   const step = useBookingStore((s) => s.step);
   return (
     <>
-      {step === "services" && <ChooseServices type="booking" />}
+      {step === "services" && <ChooseServices />}
       {step === "staff" && <ChooseStaff />}
       {step === "date" && <ChooseDate />}
       {step === "confirm" && <Confirm />}
