@@ -13,12 +13,14 @@ import { Footer } from "../footer";
 import CartTracking from "./cart-tracking";
 import StepContent from "./step-content";
 import { IService } from "@/types/service";
+import { IUser } from "@/types/user";
 
 type Props = {
   merchant: IMerchant;
   slug: string;
   categories: ICategory[];
   staff: IStaff[];
+  user: IUser | null;
 };
 
 export default function Booking(props: Props) {

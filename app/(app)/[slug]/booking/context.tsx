@@ -3,6 +3,7 @@ import { ICategory } from "@/types/category";
 import { IMerchant } from "@/types/merchant";
 import { IService } from "@/types/service";
 import { IStaff } from "@/types/staff";
+import { IUser } from "@/types/user";
 import { toast } from "sonner";
 import { z } from "zod";
 import { StoreApi, Mutate, UseBoundStore, create } from "zustand";
@@ -22,6 +23,7 @@ const IExternalStates = z.object({
   merchant: IMerchant,
   slug: z.string(),
   categories: z.array(ICategory),
+  user: IUser.nullable(),
   staff: z.array(IStaff),
   serviceMapping: z.map(z.string(), IService),
   staffMapping: z.map(z.string(), IStaff),

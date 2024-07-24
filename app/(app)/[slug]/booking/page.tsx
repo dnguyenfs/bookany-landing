@@ -3,6 +3,7 @@ import { getMerchantInfoApi } from "@/api/merchant";
 import { getCategoriesApi } from "@/api/categories";
 import Booking from "./booking";
 import { getStaffsApi } from "@/api/staff";
+import { getProfileApi } from "@/api/account";
 
 type Props = {
   params: { slug: string };
@@ -33,10 +34,11 @@ export async function generateMetadata(
 }
 
 export default async function BookingPage({ params }: Props) {
-  const [merchant, categories, staff] = await Promise.all([
+  const [merchant, categories, staff, user] = await Promise.all([
     getMerchantInfoApi(params.slug),
     getCategoriesApi(params.slug),
     getStaffsApi(params.slug),
+    getProfileApi(),
   ]);
 
   return (
@@ -45,6 +47,7 @@ export default async function BookingPage({ params }: Props) {
       categories={categories}
       slug={params.slug}
       staff={staff}
+      user={user}
     />
   );
 }
