@@ -24,9 +24,11 @@ import { Button } from "@/components/ui/button";
 import GoogleSVG from "@/public/svg/GoogleSVG";
 import { useGoogleLogin } from "@react-oauth/google";
 import FacebookSVG from "@/public/svg/FacebookSVG";
-import { precheckToken } from "./actions";
+import { precheckToken, savePhoneNumber } from "./actions";
 import { getProfileApi } from "@/api/account";
 import { toast } from "sonner";
+import { addPlus, removePlus } from "@/lib/utils/phone";
+import { formatNumber } from "libphonenumber-js";
 
 const formSchema = z.object({
   firstname: z.string().min(2, {
@@ -255,6 +257,17 @@ export function Confirm() {
                         <span className="font-semibold">Email:</span>{" "}
                         {user.email}
                       </p>
+
+                      {user.phone && (
+                        <p className="text-sm">
+                          <span className="font-semibold">Phone:</span>{" "}
+                          {formatNumber(addPlus(user.phone), "INTERNATIONAL")}
+                          {" • "}
+                          <span className="text-blue-500 underline hover:text-blue-800 hover:cursor-pointer">
+                            Change phone
+                          </span>
+                        </p>
+                      )}
                     </div>
                   </div>
                 </>
@@ -336,25 +349,34 @@ const requiredPhoneSchema = z.object({
 
 function RequiredPhone() {
   const merchant = useBookingStore((s) => s.merchant);
+  const setUser = useBookingStore((s) => s.setUser);
 
-  const phoneForm = useForm<z.infer<typeof requiredPhoneSchema>>({
+  const form = useForm<z.infer<typeof requiredPhoneSchema>>({
     resolver: zodResolver(requiredPhoneSchema),
     defaultValues: {
       phone: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof requiredPhoneSchema>) => {
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof requiredPhoneSchema>) => {
+    const newUser = await savePhoneNumber({
+      phone: values.phone,
+      userAgent: navigator.userAgent,
+    });
+
+    if (!newUser) {
+      toast.info("There was an error logging in. Please try again.");
+      return;
+    }
+    setUser(newUser);
+    toast.info("Phone number updated successfully");
   };
 
-  console.log("form", phoneForm.formState.errors);
-
   return (
-    <Form {...phoneForm}>
+    <Form {...form}>
       <form
         className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10"
-        onSubmit={phoneForm.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <div className="flex flex-col gap-2 items-center justify-center text-center">
           <p className="text-sm font-semibold">Almost done!</p>
@@ -363,7 +385,7 @@ function RequiredPhone() {
           </p>
         </div>
         <FormField
-          control={phoneForm.control}
+          control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1 w-full">
@@ -374,12 +396,12 @@ function RequiredPhone() {
                   onChange={(value) => {
                     if (value && !isValidPhoneNumber(value)) {
                       console.log("error");
-                      phoneForm.setError("phone", {
+                      form.setError("phone", {
                         message: "Invalid phone number",
                       });
                     } else {
                       console.log("no error");
-                      phoneForm.clearErrors("phone");
+                      form.clearErrors("phone");
                     }
                     field.onChange(value);
                   }}
@@ -396,7 +418,7 @@ function RequiredPhone() {
           )}
         />
         <Button
-          disabled={!phoneForm.formState.isValid}
+          disabled={!form.formState.isValid}
           className="w-full col-span-2"
           type="submit"
         >

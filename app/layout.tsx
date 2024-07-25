@@ -25,7 +25,7 @@ export default function RootLayout({
         </GoogleOAuthProvider>
 
         <SpeedInsights />
-        <Toaster />
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );

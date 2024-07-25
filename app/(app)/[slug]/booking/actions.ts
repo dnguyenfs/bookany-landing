@@ -1,5 +1,9 @@
 "use server";
-import { precheckTokenApi, PreCheckTokenType } from "@/api/auth";
+import {
+  precheckTokenApi,
+  PreCheckTokenType,
+  savePhoneNumberApi,
+} from "@/api/auth";
 // import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
@@ -17,6 +21,23 @@ export async function precheckToken({
     // revalidatePath(`/${slug}/booking`);
     const cookieStore = cookies();
     cookieStore.set("authentication", res.sessionId);
+    return res;
+  } catch (error) {
+    throw error;
+  }
+}
+
+type SavePhoneNumberType = {
+  phone: string;
+  userAgent: string;
+};
+
+export async function savePhoneNumber({
+  phone,
+  userAgent,
+}: SavePhoneNumberType) {
+  try {
+    const res = await savePhoneNumberApi(phone, userAgent);
     return res;
   } catch (error) {
     throw error;
