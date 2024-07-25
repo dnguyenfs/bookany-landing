@@ -51,6 +51,7 @@ export function Confirm() {
   const setUser = useBookingStore((s) => s.setUser);
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
+  const collectPhone = merchant.settings.collectPhone;
   const slug = merchant.slug;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -80,6 +81,8 @@ export function Confirm() {
       }
       setUser(user);
       form.setValue("email", user.email);
+      form.setValue("firstname", user.name?.split(" ")[0]);
+      form.setValue("lastname", user.name?.split(" ")?.[1] ?? "");
     },
     scope: "openid email profile",
   });
@@ -88,49 +91,81 @@ export function Confirm() {
     console.log(values);
   }
 
-  return (
-    <Form {...form}>
-      <div className="flex flex-col relative">
-        <div className="flex flex-col justify-center items-center gap-6 p-4 bg-accent">
-          <span className="text-sm">{format(date, "EEEE, MMMM dd, yyyy")}</span>
-          <div className="flex flex-col items-center justify-center">
-            {services.map((sv) => {
-              const service = serviceMapping.get(sv.id);
-              if (!service) return null;
-              return (
-                <>
-                  <p className="text-sm font-semibold">
-                    {service.name} ({service.price}
-                    {merchant.currency})
-                  </p>
-                  {/* <p className="text-sm">(Barber cut, Short/pixie Haircut)</p> */}
-                </>
-              );
-            })}
-
-            {staffId && (
-              <p className="text-sm">
-                with{" "}
-                <span className="font-semibold">
-                  {staffId === "_system"
-                    ? "Anyone"
-                    : staffMapping.get(staffId)?.name}
-                </span>{" "}
-                at{" "}
-                <span className="font-semibold">
-                  {convertMinutesToHourMinutes(beginAt ?? 0, true)}
-                </span>
-              </p>
-            )}
-          </div>
+  const requiredLoginSection = (
+    <>
+      <div className="absolute w-full h-full bg-foreground/50"></div>
+      <div className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10">
+        <div className="flex flex-col gap-2 items-center justify-center text-center">
+          <p className="text-sm font-semibold">Please sign in to continue</p>
+          <p className="text-sm text-muted-foreground">
+            Create an account or sign in to book and manage your appointments
+          </p>
         </div>
+        <Button
+          className="w-full max-w-[300px] justify-start gap-3 px-8"
+          onClick={() => login()}
+          variant="outline"
+          type="button"
+        >
+          <GoogleSVG className="mr-2 w-5 h-5" />
+          Continue with Google
+        </Button>
+        <Button
+          className="w-full max-w-[300px] px-8 gap-3 justify-start"
+          onClick={() => login()}
+          variant="outline"
+          type="button"
+        >
+          <FacebookSVG className="mr-2 w-5 h-5" />
+          Continue with Facebook
+        </Button>
+      </div>
+    </>
+  );
 
-        <div className="">
+  return (
+    <div className="flex flex-col relative">
+      <div className="flex flex-col justify-center items-center gap-6 p-4 bg-accent">
+        <span className="text-sm">{format(date, "EEEE, MMMM dd, yyyy")}</span>
+        <div className="flex flex-col items-center justify-center">
+          {services.map((sv) => {
+            const service = serviceMapping.get(sv.id);
+            if (!service) return null;
+            return (
+              <>
+                <p className="text-sm font-semibold">
+                  {service.name} ({service.price}
+                  {merchant.currency})
+                </p>
+                {/* <p className="text-sm">(Barber cut, Short/pixie Haircut)</p> */}
+              </>
+            );
+          })}
+
+          {staffId && (
+            <p className="text-sm">
+              with{" "}
+              <span className="font-semibold">
+                {staffId === "_system"
+                  ? "Anyone"
+                  : staffMapping.get(staffId)?.name}
+              </span>{" "}
+              at{" "}
+              <span className="font-semibold">
+                {convertMinutesToHourMinutes(beginAt ?? 0, true)}
+              </span>
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="">
+        <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="grid grid-cols-2 gap-4 p-4"
           >
-            {!requiredAuthenticated && (
+            {!requiredAuthenticated ? (
               <>
                 <FormField
                   control={form.control}
@@ -206,6 +241,24 @@ export function Confirm() {
                   />
                 </div>
               </>
+            ) : (
+              user && (
+                <>
+                  <div className="col-span-2 flex flex-col gap-2 mt-4">
+                    <p className="text-sm font-semibold">User information:</p>
+
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">Name:</span> {user.name}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-semibold">Email:</span>{" "}
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )
             )}
 
             <div className="col-span-2 flex flex-col gap-2 mt-4">
@@ -259,42 +312,97 @@ export function Confirm() {
             </div>
             <Button className="w-full col-span-2">Submit</Button>
           </form>
-        </div>
-        {requiredAuthenticated && !user && (
+        </Form>
+      </div>
+      {requiredAuthenticated &&
+        (!user ? (
           <>
             <div className="absolute w-full h-full bg-foreground/50"></div>
-            <div className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10">
-              <div className="flex flex-col gap-2 items-center justify-center text-center">
-                <p className="text-sm font-semibold">
-                  Please sign in to continue
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Create an account or sign in to book and manage your
-                  appointments
-                </p>
-              </div>
-              <Button
-                className="w-full max-w-[300px] justify-start gap-3 px-8"
-                onClick={() => login()}
-                variant="outline"
-                type="button"
-              >
-                <GoogleSVG className="mr-2 w-5 h-5" />
-                Continue with Google
-              </Button>
-              <Button
-                className="w-full max-w-[300px] px-8 gap-3 justify-start"
-                onClick={() => login()}
-                variant="outline"
-                type="button"
-              >
-                <FacebookSVG className="mr-2 w-5 h-5" />
-                Continue with Facebook
-              </Button>
-            </div>
+            {requiredLoginSection}
           </>
-        )}
-      </div>
+        ) : user && collectPhone && !user.phone ? (
+          <>
+            <div className="absolute w-full h-full bg-foreground/50"></div>
+            <RequiredPhone />
+          </>
+        ) : null)}
+    </div>
+  );
+}
+
+const requiredPhoneSchema = z.object({
+  phone: z.any(),
+});
+
+function RequiredPhone() {
+  const merchant = useBookingStore((s) => s.merchant);
+
+  const phoneForm = useForm<z.infer<typeof requiredPhoneSchema>>({
+    resolver: zodResolver(requiredPhoneSchema),
+    defaultValues: {
+      phone: "",
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof requiredPhoneSchema>) => {
+    console.log(values);
+  };
+
+  console.log("form", phoneForm.formState.errors);
+
+  return (
+    <Form {...phoneForm}>
+      <form
+        className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10"
+        onSubmit={phoneForm.handleSubmit(onSubmit)}
+      >
+        <div className="flex flex-col gap-2 items-center justify-center text-center">
+          <p className="text-sm font-semibold">Almost done!</p>
+          <p className="text-sm text-muted-foreground">
+            Please provide your phone number to continue
+          </p>
+        </div>
+        <FormField
+          control={phoneForm.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem className="flex flex-col gap-1 w-full">
+              <FormLabel>Phone number</FormLabel>
+              <FormControl>
+                <PhoneInput
+                  value={field.value}
+                  onChange={(value) => {
+                    if (value && !isValidPhoneNumber(value)) {
+                      console.log("error");
+                      phoneForm.setError("phone", {
+                        message: "Invalid phone number",
+                      });
+                    } else {
+                      console.log("no error");
+                      phoneForm.clearErrors("phone");
+                    }
+                    field.onChange(value);
+                  }}
+                  autoFocus
+                  countryCode={merchant.countryCode}
+                  className={cn({
+                    "!ring-red-500":
+                      field.value && !isValidPhoneNumber(field.value),
+                  })}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          disabled={!phoneForm.formState.isValid}
+          className="w-full col-span-2"
+          type="submit"
+        >
+          Update
+        </Button>
+      </form>
     </Form>
   );
 }

@@ -79,6 +79,7 @@ export const IMerchant = z.object({
   settings: z.object({
     enableOnlineBooking: z.boolean(),
     requiredAuthenticated: z.boolean(),
+    collectPhone: z.boolean(),
     taxRate: z.number(),
     cashDiscountPercent: z.number(),
     slotInterval: z.number(),

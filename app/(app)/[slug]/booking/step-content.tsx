@@ -11,8 +11,11 @@ export default function StepContent() {
   const merchant = useBookingStore((s) => s.merchant);
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
+  const collectPhone = merchant.settings.collectPhone;
 
-  const hideScroll = step === "confirm" && !user && requiredAuthenticated;
+  const hideScroll =
+    step === "confirm" &&
+    ((!user && requiredAuthenticated) || (user && collectPhone && !user.phone));
 
   return (
     <div

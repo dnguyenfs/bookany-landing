@@ -9,6 +9,7 @@ export interface InputProps {
   onChange: (value: E164Number) => void;
   country?: Country;
   countryCode?: string;
+  autoFocus?: boolean;
 }
 
 const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(
