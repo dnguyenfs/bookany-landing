@@ -24,6 +24,9 @@ import { Button } from "@/components/ui/button";
 import GoogleSVG from "@/public/svg/GoogleSVG";
 import { useGoogleLogin } from "@react-oauth/google";
 import FacebookSVG from "@/public/svg/FacebookSVG";
+import { precheckToken } from "./actions";
+import { getProfileApi } from "@/api/account";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   firstname: z.string().min(2, {
@@ -45,12 +48,10 @@ export function Confirm() {
   const staffMapping = useBookingStore((s) => s.staffMapping);
   const beginAt = useBookingStore((s) => s.beginAt);
   const user = useBookingStore((s) => s.user);
+  const setUser = useBookingStore((s) => s.setUser);
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
-
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => console.log(tokenResponse),
-  });
+  const slug = merchant.slug;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,6 +63,25 @@ export function Confirm() {
       note: "",
       agreePolicy: true,
     },
+  });
+
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      await precheckToken({
+        slug,
+        code: tokenResponse.access_token,
+        userAgent: navigator.userAgent,
+      });
+
+      const user = await getProfileApi();
+      if (!user) {
+        toast.info("There was an error logging in. Please try again.");
+        return;
+      }
+      setUser(user);
+      form.setValue("email", user.email);
+    },
+    scope: "openid email profile",
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -240,33 +260,40 @@ export function Confirm() {
             <Button className="w-full col-span-2">Submit</Button>
           </form>
         </div>
-        <div className="absolute w-full h-full bg-foreground/50"></div>
-        <div className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10">
-          <div className="flex flex-col gap-2 items-center justify-center text-center">
-            <p className="text-sm font-semibold">Please sign in to continue</p>
-            <p className="text-sm text-muted-foreground">
-              Create an account or sign in to book and manage your appointments
-            </p>
-          </div>
-          <Button
-            className="w-full max-w-[300px] justify-start gap-3 px-8"
-            onClick={() => login()}
-            variant="outline"
-            type="button"
-          >
-            <GoogleSVG className="mr-2" />
-            Continue with Google
-          </Button>
-          <Button
-            className="w-full max-w-[300px] px-8 gap-3 justify-start"
-            onClick={() => login()}
-            variant="outline"
-            type="button"
-          >
-            <FacebookSVG className="mr-2 w-6 h-6" />
-            Continue with Facebook
-          </Button>
-        </div>
+        {requiredAuthenticated && !user && (
+          <>
+            <div className="absolute w-full h-full bg-foreground/50"></div>
+            <div className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10">
+              <div className="flex flex-col gap-2 items-center justify-center text-center">
+                <p className="text-sm font-semibold">
+                  Please sign in to continue
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Create an account or sign in to book and manage your
+                  appointments
+                </p>
+              </div>
+              <Button
+                className="w-full max-w-[300px] justify-start gap-3 px-8"
+                onClick={() => login()}
+                variant="outline"
+                type="button"
+              >
+                <GoogleSVG className="mr-2 w-5 h-5" />
+                Continue with Google
+              </Button>
+              <Button
+                className="w-full max-w-[300px] px-8 gap-3 justify-start"
+                onClick={() => login()}
+                variant="outline"
+                type="button"
+              >
+                <FacebookSVG className="mr-2 w-5 h-5" />
+                Continue with Facebook
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </Form>
   );

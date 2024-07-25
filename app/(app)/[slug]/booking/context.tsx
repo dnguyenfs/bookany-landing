@@ -50,6 +50,7 @@ type IBookingState = IExternalStates &
     selectStaff: (staffId: string) => void;
     selectDate: (date: Date) => void;
     selectBeginAt: (beginAt: number | null) => void;
+    setUser: (user: IUser | null) => void;
   };
 
 type UseBearStore = UseBoundStore<Mutate<StoreApi<IBookingState>, []>>;
@@ -196,6 +197,11 @@ export const BookingStoreProvider = ({
             selectBeginAt: (beginAt) =>
               set((s) => {
                 s.beginAt = beginAt;
+                return s;
+              }),
+            setUser: (user) =>
+              set((s) => {
+                s.user = user;
                 return s;
               }),
           }))
