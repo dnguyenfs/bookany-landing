@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const inter = Montserrat({ subsets: ["latin"] });
 
@@ -19,7 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {children}
+        <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID!}>
+          {children}
+        </GoogleOAuthProvider>
+
         <SpeedInsights />
         <Toaster />
       </body>

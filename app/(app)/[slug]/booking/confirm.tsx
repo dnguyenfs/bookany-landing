@@ -22,6 +22,8 @@ import { format } from "date-fns";
 import { convertMinutesToHourMinutes } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import GoogleSVG from "@/public/svg/GoogleSVG";
+import { useGoogleLogin } from "@react-oauth/google";
+import FacebookSVG from "@/public/svg/FacebookSVG";
 
 const formSchema = z.object({
   firstname: z.string().min(2, {
@@ -46,6 +48,10 @@ export function Confirm() {
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
 
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => console.log(tokenResponse),
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,11 +68,9 @@ export function Confirm() {
     console.log(values);
   }
 
-  const handleSignIn = () => {};
-
   return (
     <Form {...form}>
-      <div className="flex flex-col">
+      <div className="flex flex-col relative">
         <div className="flex flex-col justify-center items-center gap-6 p-4 bg-accent">
           <span className="text-sm">{format(date, "EEEE, MMMM dd, yyyy")}</span>
           <div className="flex flex-col items-center justify-center">
@@ -100,13 +104,14 @@ export function Confirm() {
             )}
           </div>
         </div>
-        {requiredAuthenticated ? (
-          user ? (
-            <div className="">
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="grid grid-cols-2 gap-4 p-4"
-              >
+
+        <div className="">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-2 gap-4 p-4"
+          >
+            {!requiredAuthenticated && (
+              <>
                 <FormField
                   control={form.control}
                   name="firstname"
@@ -180,214 +185,88 @@ export function Confirm() {
                     )}
                   />
                 </div>
+              </>
+            )}
 
-                <div className="col-span-2 flex flex-col gap-2 mt-4">
-                  <p className="text-sm font-semibold">Cancellation policy:</p>
-                  <p className="text-sm">
-                    For appointments canceled within 24 hours or "no-show"
-                    appointments, We charge 100% of the service total.
-                  </p>
-                  <FormField
-                    control={form.control}
-                    name="agreePolicy"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="flex items-center gap-2">
-                            <Switch
-                              checked={field.value}
-                              id="agree-cancellation-policy"
-                            />
-                            <Label
-                              htmlFor="agree-cancellation-policy"
-                              className="text-sm cursor-pointer"
-                            >
-                              I agree to the cancellation policy
-                            </Label>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-2 flex flex-col gap-2">
-                  <FormField
-                    control={form.control}
-                    name="note"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Note</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            rows={4}
-                            placeholder="Enter any note"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button className="w-full col-span-2">Submit</Button>
-              </form>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4 px-8 py-4 justify-center items-center">
-              <div className="flex flex-col gap-2 items-center justify-center text-center">
-                <p className="text-sm font-semibold">
-                  Please sign in to continue
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Create an account or sign in to book and manage your
-                  appointments
-                </p>
-              </div>
-              <Button
-                className="w-full min-w-[200px]"
-                onClick={handleSignIn}
-                variant="outline"
-                type="button"
-              >
-                <GoogleSVG className="mr-2" />
-                Continue with Google
-              </Button>
-            </div>
-          )
-        ) : (
-          <div className="">
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-2 gap-4 p-4"
-            >
+            <div className="col-span-2 flex flex-col gap-2 mt-4">
+              <p className="text-sm font-semibold">Cancellation policy:</p>
+              <p className="text-sm">
+                For appointments canceled within 24 hours or "no-show"
+                appointments, We charge 100% of the service total.
+              </p>
               <FormField
                 control={form.control}
-                name="firstname"
+                name="agreePolicy"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter first name" {...field} />
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={field.value}
+                          id="agree-cancellation-policy"
+                        />
+                        <Label
+                          htmlFor="agree-cancellation-policy"
+                          className="text-sm cursor-pointer"
+                        >
+                          I agree to the cancellation policy
+                        </Label>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
+            <div className="col-span-2 flex flex-col gap-2">
               <FormField
                 control={form.control}
-                name="lastname"
+                name="note"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last name</FormLabel>
+                    <FormLabel>Note</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter last name" {...field} />
+                      <Textarea
+                        rows={4}
+                        placeholder="Enter any note"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col gap-1">
-                      <FormLabel>Phone number</FormLabel>
-                      <FormControl>
-                        <PhoneInput
-                          value={field.value}
-                          onChange={(value) => {
-                            if (value && !isValidPhoneNumber(value)) {
-                              form.setError("phone", {
-                                message: "Invalid phone number",
-                              });
-                            } else {
-                              form.clearErrors("phone");
-                            }
-                            field.onChange(value);
-                          }}
-                          countryCode={merchant.countryCode}
-                          className={cn({
-                            "!ring-red-500":
-                              field.value && !isValidPhoneNumber(field.value),
-                          })}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="col-span-2 flex flex-col gap-2 mt-4">
-                <p className="text-sm font-semibold">Cancellation policy:</p>
-                <p className="text-sm">
-                  For appointments canceled within 24 hours or "no-show"
-                  appointments, We charge 100% of the service total.
-                </p>
-                <FormField
-                  control={form.control}
-                  name="agreePolicy"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={field.value}
-                            id="agree-cancellation-policy"
-                          />
-                          <Label
-                            htmlFor="agree-cancellation-policy"
-                            className="text-sm cursor-pointer"
-                          >
-                            I agree to the cancellation policy
-                          </Label>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-2 flex flex-col gap-2">
-                <FormField
-                  control={form.control}
-                  name="note"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Note</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          rows={4}
-                          placeholder="Enter any note"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <Button className="w-full col-span-2">Submit</Button>
-            </form>
+            </div>
+            <Button className="w-full col-span-2">Submit</Button>
+          </form>
+        </div>
+        <div className="absolute w-full h-full bg-foreground/50"></div>
+        <div className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0 flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10">
+          <div className="flex flex-col gap-2 items-center justify-center text-center">
+            <p className="text-sm font-semibold">Please sign in to continue</p>
+            <p className="text-sm text-muted-foreground">
+              Create an account or sign in to book and manage your appointments
+            </p>
           </div>
-        )}
+          <Button
+            className="w-full max-w-[300px] justify-start gap-3 px-8"
+            onClick={() => login()}
+            variant="outline"
+            type="button"
+          >
+            <GoogleSVG className="mr-2" />
+            Continue with Google
+          </Button>
+          <Button
+            className="w-full max-w-[300px] px-8 gap-3 justify-start"
+            onClick={() => login()}
+            variant="outline"
+            type="button"
+          >
+            <FacebookSVG className="mr-2 w-6 h-6" />
+            Continue with Facebook
+          </Button>
+        </div>
       </div>
     </Form>
   );

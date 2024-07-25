@@ -85,9 +85,7 @@ export function BookingApp() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <Branding />
           <Steps />
-          <div className="flex-1 overflow-y-auto scrollbar-app">
-            <StepContent />
-          </div>
+          <StepContent />
         </div>
         <CartTracking />
       </div>
