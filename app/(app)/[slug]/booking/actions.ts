@@ -1,4 +1,5 @@
 "use server";
+import { LogoutApi } from "@/api/account";
 import {
   precheckTokenApi,
   PreCheckTokenType,
@@ -39,6 +40,16 @@ export async function savePhoneNumber({
   try {
     const res = await savePhoneNumberApi(phone, userAgent);
     return res;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function logout() {
+  try {
+    await LogoutApi();
+    const cookieStore = cookies();
+    cookieStore.delete("authentication");
   } catch (error) {
     throw error;
   }

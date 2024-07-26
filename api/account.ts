@@ -23,3 +23,27 @@ export async function getProfileApi(): Promise<IUser | null> {
   const data = await res.json();
   return data;
 }
+
+export async function LogoutApi(): Promise<IUser | null> {
+  const cookieStore = cookies();
+  const authentication = cookieStore.get("authentication");
+
+  const res = await fetch(
+    `${process.env.API_URL}/auth/signout`,
+    authentication?.value
+      ? {
+          method: "POST",
+          headers: {
+            Cookie: `authentication=${authentication.value};`,
+          },
+        }
+      : {
+          method: "POST",
+        }
+  );
+  if (!res.ok) {
+    return null;
+  }
+  const data = await res.json();
+  return data;
+}
