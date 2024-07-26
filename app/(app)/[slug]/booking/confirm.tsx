@@ -27,8 +27,13 @@ import FacebookSVG from "@/public/svg/FacebookSVG";
 import { precheckToken, savePhoneNumber } from "./actions";
 import { getProfileApi } from "@/api/account";
 import { toast } from "sonner";
-import { addPlus, removePlus } from "@/lib/utils/phone";
+import { addPlus } from "@/lib/utils/phone";
 import { formatNumber } from "libphonenumber-js";
+import { useState } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { LoaderCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
   firstname: z.string().min(2, {
@@ -51,6 +56,8 @@ export function Confirm() {
   const beginAt = useBookingStore((s) => s.beginAt);
   const user = useBookingStore((s) => s.user);
   const setUser = useBookingStore((s) => s.setUser);
+  const [openConfirmOtp, setOpenConfirmOtp] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
   const collectPhone = merchant.settings.collectPhone;
@@ -59,10 +66,10 @@ export function Confirm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstname: "",
-      lastname: "",
-      phone: "",
-      email: "",
+      firstname: user?.name ? user.name?.split(" ")[0] : "",
+      lastname: user?.name ? user.name?.split(" ")?.[1] ?? "" : "",
+      phone: user?.phone ?? "",
+      email: user?.email ?? "",
       note: "",
       agreePolicy: true,
     },
@@ -90,8 +97,16 @@ export function Confirm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    setOpenConfirmOtp(true);
   }
+
+  const createBooking = () => {
+    const values = form.getValues();
+    if (!isDesktop) {
+      setOpenConfirmOtp(false);
+    }
+    console.log("create booking", values);
+  };
 
   const requiredLoginSection = (
     <>
@@ -123,6 +138,22 @@ export function Confirm() {
         </Button>
       </div>
     </>
+  );
+
+  const confirmSmartOtp = isDesktop ? (
+    <>
+      <div className="absolute w-full h-full bg-foreground/50"></div>
+      <ConfirmOtp
+        onAccept={createBooking}
+        className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0"
+      />
+    </>
+  ) : (
+    <Drawer open={openConfirmOtp} onOpenChange={setOpenConfirmOtp}>
+      <DrawerContent>
+        <ConfirmOtp onAccept={createBooking} />
+      </DrawerContent>
+    </Drawer>
   );
 
   return (
@@ -323,7 +354,9 @@ export function Confirm() {
                 )}
               />
             </div>
-            <Button className="w-full col-span-2">Submit</Button>
+            <Button type="submit" className="w-full col-span-2">
+              Submit
+            </Button>
           </form>
         </Form>
       </div>
@@ -339,6 +372,60 @@ export function Confirm() {
             <RequiredPhone />
           </>
         ) : null)}
+
+      {openConfirmOtp && confirmSmartOtp}
+    </div>
+  );
+}
+
+function ConfirmOtp({
+  onAccept,
+  className,
+}: {
+  onAccept: () => void;
+  className?: string;
+}) {
+  const otp = (function () {
+    //generate 6 random numbers
+    const numbers = [];
+    for (let i = 0; i < 6; i++) {
+      numbers.push(Math.floor(Math.random() * 10));
+    }
+    return numbers.join("");
+  })();
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-4 px-8 py-6 justify-center items-center w-full z-10",
+        className
+      )}
+    >
+      <div className="flex flex-col gap-4 items-center justify-center text-center">
+        <p className="text-sm font-semibold">Confirm transaction</p>
+        <p className="text-sm text-muted-foreground">
+          Here is smart otp of this transaction. Please confirm to finish.
+        </p>
+        <div className="flex relative border rounded-full w-full p-3">
+          <div className="flex-1 space-x-4">
+            {otp.split("").map((char, index) => (
+              <span key={index} className="text-chart-1 text-3xl font-medium">
+                {char}
+              </span>
+            ))}
+          </div>
+          <LoaderCircle className="w-8 h-8 text-primary animate-spin" />
+          <Badge
+            variant={"outline"}
+            className="absolute bg-background w-fit mx-auto -top-3 left-0 right-0"
+          >
+            Smart-OTP
+          </Badge>
+        </div>
+      </div>
+      <Button onClick={onAccept} className="w-full" type="button">
+        Confirm
+      </Button>
     </div>
   );
 }
