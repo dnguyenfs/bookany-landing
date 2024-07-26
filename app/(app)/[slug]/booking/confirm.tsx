@@ -414,7 +414,7 @@ function ConfirmOtp({
               </span>
             ))}
           </div>
-          <LoaderCircle className="w-8 h-8 text-primary animate-spin" />
+          <LoaderCircle className="absolute right-3 w-8 h-8 text-primary animate-spin" />
           <Badge
             variant={"outline"}
             className="absolute bg-background w-fit mx-auto -top-3 left-0 right-0"
