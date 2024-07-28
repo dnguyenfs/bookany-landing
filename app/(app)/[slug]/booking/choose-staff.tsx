@@ -56,7 +56,7 @@ export function ChooseStaff() {
               }
               width={40}
               height={40}
-              className="rounded-full"
+              className="rounded-full flex-none !h-10"
               alt={"staff avatar"}
             />
             <div className="flex flex-col gap-1">

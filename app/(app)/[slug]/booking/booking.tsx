@@ -2,7 +2,7 @@
 import { Branding } from "./branding";
 import { Steps } from "./steps";
 import { BookingStoreProvider, useBookingStore } from "./context";
-import { LoaderIcon } from "lucide-react";
+import { LoaderCircleIcon } from "lucide-react";
 import { ICategory } from "@/types/category";
 import { IMerchant } from "@/types/merchant";
 import { IStaff } from "@/types/staff";
@@ -74,7 +74,7 @@ export function BookingApp() {
   if (!hasHydratedColor) {
     return (
       <div className="flex flex-col h-full w-full justify-center items-center text-primary">
-        <LoaderIcon className="w-8 h-8 animate-spin" />
+        <LoaderCircleIcon className="w-8 h-8 animate-spin text-gray-500" />
       </div>
     );
   }
