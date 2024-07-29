@@ -55,7 +55,7 @@ export function Branding() {
           <p className="text-muted-foreground uppercase text-[8px]">
             Powered by
           </p>
-          <p className="text-muted-foreground text-sm font-semibold tracking-wider">
+          <p className="text-muted-foreground text-sm font-semibold text-primary tracking-wider">
             {process.env.NEXT_PUBLIC_APP_NAME}
           </p>
         </div>

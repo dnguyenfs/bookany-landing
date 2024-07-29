@@ -1,6 +1,11 @@
 "use client";
-import { CalendarXIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import React, { useState } from "react";
+import {
+  CalendarXIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   convertMinutesToHourMinutes,
   generateDateRange,
@@ -10,16 +15,31 @@ import { cn } from "@/lib/utils";
 import { format, isBefore, isSameDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useBookingStore } from "./context";
+import { getTimeSlots } from "./actions";
+import { ITimeSlotRes } from "@/api/time-slots";
 
 export function ChooseDate() {
   const date = useBookingStore((s) => s.date);
   const beginAt = useBookingStore((s) => s.beginAt);
   const selectDate = useBookingStore((s) => s.selectDate);
+  const staffId = useBookingStore((s) => s.staffId);
+  const services = useBookingStore((s) => s.services);
   const selectBeginAt = useBookingStore((s) => s.selectBeginAt);
   const nextStep = useBookingStore((s) => s.nextStep);
+  const merchantSlug = useBookingStore((s) => s.merchant.slug);
   const [currentDate, setCurrentDate] = useState(date ?? new Date());
   const ranges = generateDateRange(generateWeekRange(currentDate));
-  const slots = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+  const [res, setRes] = useState<ITimeSlotRes>({});
+  const [isFetching, setIsFetching] = useState(false);
+
+  const timeSlot = useMemo(() => {
+    const date = format(currentDate, "yyyy-MM-dd");
+    return res[date] ?? { slots: [], isClosed: false, closedReason: "" };
+  }, [currentDate, res]);
+
+  const slots = useMemo(() => {
+    return timeSlot.slots ?? [];
+  }, [timeSlot.slots]);
 
   const nextWeek = () => {
     const nextWeekDate = new Date(currentDate);
@@ -49,6 +69,40 @@ export function ChooseDate() {
     nextStep();
   };
 
+  const dateRangeString = useMemo(() => {
+    return `${format(ranges[0], "yyyy-MM-dd")}_${format(
+      ranges[ranges.length - 1],
+      "yyyy-MM-dd"
+    )}`;
+  }, [ranges]);
+
+  const serviceIds = useMemo(() => {
+    return services.map((service) => service.id);
+  }, [services]);
+
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      setIsFetching(true);
+      try {
+        const res = await getTimeSlots({
+          slug: merchantSlug,
+          userAgent: navigator.userAgent,
+          staffId,
+          serviceIds,
+          startDate: dateRangeString.split("_")[0],
+          endDate: dateRangeString.split("_")[1],
+        });
+        setRes(res);
+        setIsFetching(false);
+      } catch (e) {
+        console.log("error", e);
+        setIsFetching(false);
+      }
+    };
+
+    fetchTimeSlots();
+  }, [dateRangeString, merchantSlug, staffId, serviceIds]);
+
   const disabledPrevDate = isBefore(ranges[0], new Date());
 
   return (
@@ -73,6 +127,17 @@ export function ChooseDate() {
         <div className="flex items-center justify-between gap-2">
           {ranges.map((rangeDate, index) => {
             const selected = isSameDay(rangeDate, date);
+
+            const formatedDate = format(rangeDate, "yyyy-MM-dd");
+
+            const timeSlots = res[formatedDate] ?? {
+              slots: [],
+              isClosed: false,
+            };
+
+            const isClosed = timeSlots?.isClosed;
+            const slots = timeSlots?.slots;
+
             const isLessThanToday =
               isBefore(rangeDate, new Date()) &&
               !isSameDay(rangeDate, new Date());
@@ -85,7 +150,8 @@ export function ChooseDate() {
                   "flex items-center justify-center flex-col gap-1",
                   {
                     "cursor-not-allowed pointer-events-none opacity-30":
-                      isLessThanToday,
+                      isLessThanToday || isClosed,
+                    "opacity-30": slots.length === 0,
                   }
                 )}
               >
@@ -112,8 +178,15 @@ export function ChooseDate() {
           </span>
         </span>
       </div>
-      <div className="flex flex-col flex-1 overflow-y-auto scrollbar-app">
-        {slots.length === 0 && (
+      <div
+        className={cn(
+          "flex flex-col flex-1 overflow-y-auto scrollbar-app relative",
+          {
+            "opacity-30": isFetching,
+          }
+        )}
+      >
+        {slots.length === 0 && !timeSlot.isClosed && !isFetching && (
           <div className="flex justify-center items-center flex-col flex-1 gap-2">
             <p className="text-base font-semibold">No Available slots</p>
             <p className="text-sm">
@@ -122,23 +195,40 @@ export function ChooseDate() {
             <CalendarXIcon className="w-24 h-24 text-muted-foreground" />
           </div>
         )}
+        {timeSlot.isClosed && !isFetching && (
+          <div className="flex justify-center items-center flex-col flex-1 gap-2">
+            <p className="text-base font-semibold">Merchant is closed</p>
+            <blockquote className="text-sm text-muted-foreground">
+              "{timeSlot.closedReason}"
+            </blockquote>
+            <p className="text-sm text-muted-foreground">
+              Please try another date
+            </p>
+            <CalendarXIcon className="w-24 h-24 text-muted-foreground" />
+          </div>
+        )}
+        {isFetching && (
+          <div className="flex items-center justify-center absolute top-0 left-0 right-0 bottom-0 z-10 w-full h-full">
+            <LoaderCircleIcon className="w-8 h-8 animate-spin text-gray-500" />
+          </div>
+        )}
         {slots.length > 0 &&
           slots.map((slot) => {
-            const selected = slot * 60 === beginAt;
+            const selected = slot.beginAt === beginAt;
             return (
               <div
-                key={slot}
+                key={slot.beginAt}
                 className={cn(
                   "flex items-center justify-between gap-8 px-4 hover:bg-primary/10 py-4 cursor-pointer",
                   {
                     "bg-primary/10": selected,
                   }
                 )}
-                onClick={() => handleSelectBeginAt(slot * 60)}
+                onClick={() => handleSelectBeginAt(slot.beginAt)}
               >
                 <div className="flex flex-col gap-1">
                   <p className="">
-                    {convertMinutesToHourMinutes(slot * 60, true)}
+                    {convertMinutesToHourMinutes(slot.beginAt, true)}
                   </p>
                 </div>
                 <ChevronRightIcon className="w-4 h-4 text-muted-foreground" />

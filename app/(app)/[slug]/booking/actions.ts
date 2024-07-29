@@ -5,6 +5,11 @@ import {
   PreCheckTokenType,
   savePhoneNumberApi,
 } from "@/api/auth";
+import {
+  getTimeSlotsApi,
+  IGetTimeSlotProps,
+  ITimeSlotRes,
+} from "@/api/time-slots";
 // import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
@@ -50,6 +55,17 @@ export async function logout() {
     await LogoutApi();
     const cookieStore = cookies();
     cookieStore.delete("authentication");
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getTimeSlots(
+  props: IGetTimeSlotProps
+): Promise<ITimeSlotRes> {
+  try {
+    const res = await getTimeSlotsApi(props);
+    return res;
   } catch (error) {
     throw error;
   }
