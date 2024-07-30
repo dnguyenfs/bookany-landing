@@ -29,8 +29,9 @@ import {
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { logout } from "./actions";
+import { logoutAction } from "./actions";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function Branding() {
   const merchant = useBookingStore((s) => s.merchant);
@@ -40,7 +41,11 @@ export function Branding() {
   const [openVault, setOpenVault] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
+    const error = await logoutAction();
+    if (error) {
+      toast.info(error.message);
+      return;
+    }
     setUser(null);
     if (!isDesktop) setOpenVault(false);
   };
@@ -55,7 +60,7 @@ export function Branding() {
           <p className="text-muted-foreground uppercase text-[8px]">
             Powered by
           </p>
-          <p className="text-muted-foreground text-sm font-semibold text-primary tracking-wider">
+          <p className="text-sm font-semibold text-primary tracking-wider">
             {process.env.NEXT_PUBLIC_APP_NAME}
           </p>
         </div>

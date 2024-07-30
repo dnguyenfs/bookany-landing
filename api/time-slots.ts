@@ -23,14 +23,10 @@ export async function getTimeSlotsApi({
   userAgent,
   ...rest
 }: IGetTimeSlotProps): Promise<ITimeSlotRes> {
-  try {
-    const res = await axios.post(`/online/${slug}/available-slots`, rest, {
-      headers: {
-        "User-Agent": userAgent,
-      },
-    });
-    return res.data;
-  } catch (error) {
-    throw error;
-  }
+  const res = await axios.post(`/online/${slug}/available-slots`, rest, {
+    headers: {
+      "User-Agent": userAgent,
+    },
+  });
+  return res.data;
 }

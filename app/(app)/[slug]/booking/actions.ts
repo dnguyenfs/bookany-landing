@@ -10,10 +10,12 @@ import {
   IGetTimeSlotProps,
   ITimeSlotRes,
 } from "@/api/time-slots";
-// import { revalidatePath } from "next/cache";
+import { IError } from "@/types/error";
+import { IUser } from "@/types/user";
+import { AxiosError } from "axios";
 import { cookies } from "next/headers";
 
-export async function precheckToken({
+export async function precheckTokenAction({
   code,
   slug,
   userAgent,
@@ -21,14 +23,22 @@ export async function precheckToken({
   code: string;
   slug: string;
   userAgent: string;
-}): Promise<PreCheckTokenType> {
+}): Promise<[PreCheckTokenType | null, IError]> {
   try {
     const res = await precheckTokenApi(code, userAgent);
-    // revalidatePath(`/${slug}/booking`);
     const cookieStore = cookies();
     cookieStore.set("authentication", res.sessionId);
-    return res;
+    return [res, null];
   } catch (error) {
+    if (error instanceof AxiosError) {
+      return [
+        null,
+        {
+          ...error.response?.data,
+          statusCode: error.response?.status,
+        },
+      ];
+    }
     throw error;
   }
 }
@@ -38,35 +48,60 @@ type SavePhoneNumberType = {
   userAgent: string;
 };
 
-export async function savePhoneNumber({
+export async function savePhoneNumberAction({
   phone,
   userAgent,
-}: SavePhoneNumberType) {
+}: SavePhoneNumberType): Promise<[IUser | null, IError]> {
   try {
     const res = await savePhoneNumberApi(phone, userAgent);
-    return res;
+    return [res, null];
   } catch (error) {
+    if (error instanceof AxiosError) {
+      return [
+        null,
+        {
+          ...error.response?.data,
+          statusCode: error.response?.status,
+        },
+      ];
+    }
     throw error;
   }
 }
 
-export async function logout() {
+export async function logoutAction(): Promise<IError> {
   try {
     await LogoutApi();
     const cookieStore = cookies();
     cookieStore.delete("authentication");
+    return null;
   } catch (error) {
+    if (error instanceof AxiosError) {
+      return {
+        ...error.response?.data,
+        statusCode: error.response?.status,
+      };
+    }
     throw error;
   }
 }
 
-export async function getTimeSlots(
+export async function getTimeSlotsAction(
   props: IGetTimeSlotProps
-): Promise<ITimeSlotRes> {
+): Promise<[ITimeSlotRes | null, IError]> {
   try {
     const res = await getTimeSlotsApi(props);
-    return res;
+    return [res, null];
   } catch (error) {
+    if (error instanceof AxiosError) {
+      return [
+        null,
+        {
+          ...error.response?.data,
+          statusCode: error.response?.status,
+        },
+      ];
+    }
     throw error;
   }
 }

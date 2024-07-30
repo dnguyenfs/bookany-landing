@@ -12,11 +12,13 @@ import {
   generateWeekRange,
 } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import { format, isBefore, isSameDay } from "date-fns";
+import { format, isBefore, isSameDay, set } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useBookingStore } from "./context";
-import { getTimeSlots } from "./actions";
-import { ITimeSlotRes } from "@/api/time-slots";
+import { getTimeSlotsAction } from "./actions";
+import { IGetTimeSlotProps, ITimeSlotRes } from "@/api/time-slots";
+import { IError } from "@/types/error";
+import { toast } from "sonner";
 
 export function ChooseDate() {
   const date = useBookingStore((s) => s.date);
@@ -83,21 +85,29 @@ export function ChooseDate() {
   useEffect(() => {
     const fetchTimeSlots = async () => {
       setIsFetching(true);
-      try {
-        const res = await getTimeSlots({
-          slug: merchantSlug,
-          userAgent: navigator.userAgent,
+      let body = {
+        slug: merchantSlug,
+        userAgent: navigator.userAgent,
+        serviceIds,
+        startDate: dateRangeString.split("_")[0],
+        endDate: dateRangeString.split("_")[1],
+      } as IGetTimeSlotProps;
+      if (staffId !== "_system") {
+        body = {
+          ...body,
           staffId,
-          serviceIds,
-          startDate: dateRangeString.split("_")[0],
-          endDate: dateRangeString.split("_")[1],
-        });
-        setRes(res);
-        setIsFetching(false);
-      } catch (e) {
-        console.log("error", e);
-        setIsFetching(false);
+        };
       }
+      const [res, error] = await getTimeSlotsAction(body);
+      if (error) {
+        toast.info(error.message);
+        setIsFetching(false);
+        return;
+      }
+      if (res) {
+        setRes(res);
+      }
+      setIsFetching(false);
     };
 
     fetchTimeSlots();

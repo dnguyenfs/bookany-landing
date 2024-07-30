@@ -1,6 +1,5 @@
 import axios from "@/lib/axios";
 import { IUser } from "@/types/user";
-import { AxiosError } from "axios";
 import { cookies } from "next/headers";
 
 export type PreCheckTokenType = { sessionId: string };
@@ -9,24 +8,20 @@ export async function precheckTokenApi(
   code: string,
   userAgent: string
 ): Promise<PreCheckTokenType> {
-  try {
-    const res = await axios.post(
-      "/auth/pre-check-token",
-      {
-        code,
-        identity: "Customer",
+  const res = await axios.post(
+    "/auth/pre-check-token",
+    {
+      code,
+      identity: "Customer",
+    },
+    {
+      headers: {
+        "User-Agent": userAgent,
       },
-      {
-        headers: {
-          "User-Agent": userAgent,
-        },
-      }
-    );
+    }
+  );
 
-    return res.data;
-  } catch (e) {
-    throw e;
-  }
+  return res.data;
 }
 
 export async function savePhoneNumberApi(
@@ -34,26 +29,21 @@ export async function savePhoneNumberApi(
   userAgent: string
 ): Promise<IUser> {
   "use server";
-  try {
-    const cookieStore = cookies();
-    const authentication = cookieStore.get("authentication");
+  const cookieStore = cookies();
+  const authentication = cookieStore.get("authentication");
 
-    console.log("authentication", authentication);
-    const res = await axios.post(
-      "/auth/update-phone",
-      {
-        phone,
+  const res = await axios.post(
+    "/auth/update-phone",
+    {
+      phone,
+    },
+    {
+      headers: {
+        "User-Agent": userAgent,
+        Cookie: `authentication=${authentication?.value};`,
       },
-      {
-        headers: {
-          "User-Agent": userAgent,
-          Cookie: `authentication=${authentication?.value};`,
-        },
-      }
-    );
+    }
+  );
 
-    return res.data;
-  } catch (e) {
-    throw e;
-  }
+  return res.data;
 }

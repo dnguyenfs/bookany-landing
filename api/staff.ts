@@ -1,10 +1,7 @@
 import { IStaff } from "@/types/staff";
+import axios from "@/lib/axios";
 
 export async function getStaffsApi(slug: string): Promise<IStaff[]> {
-  const res = await fetch(`${process.env.API_URL}/online/${slug}/staff`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch staff");
-  }
-  const data = await res.json();
-  return data;
+  const res = await axios.get(`/online/${slug}/staff`);
+  return res.data;
 }

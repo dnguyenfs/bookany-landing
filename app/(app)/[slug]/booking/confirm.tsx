@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import GoogleSVG from "@/public/svg/GoogleSVG";
 import { useGoogleLogin } from "@react-oauth/google";
 import FacebookSVG from "@/public/svg/FacebookSVG";
-import { precheckToken, savePhoneNumber } from "./actions";
+import { precheckTokenAction, savePhoneNumberAction } from "./actions";
 import { getProfileApi } from "@/api/account";
 import { toast } from "sonner";
 import { addPlus } from "@/lib/utils/phone";
@@ -77,11 +77,16 @@ export function Confirm() {
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      await precheckToken({
+      const [res, error] = await precheckTokenAction({
         slug,
         code: tokenResponse.access_token,
         userAgent: navigator.userAgent,
       });
+
+      if (error) {
+        toast.info(error.message);
+        return;
+      }
 
       const user = await getProfileApi();
       if (!user) {
@@ -446,15 +451,16 @@ function RequiredPhone() {
   });
 
   const onSubmit = async (values: z.infer<typeof requiredPhoneSchema>) => {
-    const newUser = await savePhoneNumber({
+    const [newUser, error] = await savePhoneNumberAction({
       phone: values.phone,
       userAgent: navigator.userAgent,
     });
 
-    if (!newUser) {
+    if (error) {
       toast.info("There was an error logging in. Please try again.");
       return;
     }
+
     setUser(newUser);
     toast.info("Phone number updated successfully");
   };
