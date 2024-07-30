@@ -35,16 +35,27 @@ import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { LoaderCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-const formSchema = z.object({
-  firstname: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  lastname: z.string(),
-  phone: z.any(),
-  email: z.string().email("Invalid email"),
-  note: z.string(),
-  agreePolicy: z.boolean(),
-});
+const formSchema = z
+  .object({
+    firstname: z.string().min(2, {
+      message: "Username must be at least 2 characters.",
+    }),
+    lastname: z.string(),
+    phone: z.any(),
+    email: z.string().email("Invalid email"),
+    note: z.string(),
+    agreePolicy: z.boolean(),
+  })
+  .superRefine((data, ctx) => {
+    const phone = data.phone;
+    if (phone && !isValidPhoneNumber(phone)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["phone"],
+        message: "Invalid phone number",
+      });
+    }
+  });
 
 export function Confirm() {
   const merchant = useBookingStore((s) => s.merchant);
@@ -242,13 +253,6 @@ export function Confirm() {
                           <PhoneInput
                             value={field.value}
                             onChange={(value) => {
-                              if (value && !isValidPhoneNumber(value)) {
-                                form.setError("phone", {
-                                  message: "Invalid phone number",
-                                });
-                              } else {
-                                form.clearErrors("phone");
-                              }
                               field.onChange(value);
                             }}
                             countryCode={merchant.countryCode}
@@ -435,9 +439,20 @@ function ConfirmOtp({
   );
 }
 
-const requiredPhoneSchema = z.object({
-  phone: z.any(),
-});
+const requiredPhoneSchema = z
+  .object({
+    phone: z.any(),
+  })
+  .superRefine((data, ctx) => {
+    const phone = data.phone;
+    if (phone && !isValidPhoneNumber(phone)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["phone"],
+        message: "Invalid phone number",
+      });
+    }
+  });
 
 function RequiredPhone() {
   const merchant = useBookingStore((s) => s.merchant);
@@ -487,15 +502,6 @@ function RequiredPhone() {
                 <PhoneInput
                   value={field.value}
                   onChange={(value) => {
-                    if (value && !isValidPhoneNumber(value)) {
-                      console.log("error");
-                      form.setError("phone", {
-                        message: "Invalid phone number",
-                      });
-                    } else {
-                      console.log("no error");
-                      form.clearErrors("phone");
-                    }
                     field.onChange(value);
                   }}
                   autoFocus
