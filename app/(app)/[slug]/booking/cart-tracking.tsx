@@ -13,7 +13,7 @@ export default function CartTracking() {
   const prevStep = useBookingStore((s) => s.prevStep);
 
   const staffId = useBookingStore((s) => s.staffId);
-  const showCart = services.length > 0;
+  const showCart = services.length > 0 && step !== "billing";
 
   if (!showCart) return null;
 

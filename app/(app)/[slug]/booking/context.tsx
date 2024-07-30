@@ -10,7 +10,7 @@ import { StoreApi, Mutate, UseBoundStore, create } from "zustand";
 import createContext from "zustand/context";
 import { immer } from "zustand/middleware/immer";
 
-const IStep = z.enum(["services", "staff", "date", "confirm"]);
+const IStep = z.enum(["services", "staff", "date", "confirm", "billing"]);
 type IStep = z.infer<typeof IStep>;
 
 const IServiceOption = z.object({
@@ -51,6 +51,7 @@ type IBookingState = IExternalStates &
     selectDate: (date: Date) => void;
     selectBeginAt: (beginAt: number | null) => void;
     setUser: (user: IUser | null) => void;
+    reset: () => void;
   };
 
 type UseBearStore = UseBoundStore<Mutate<StoreApi<IBookingState>, []>>;
@@ -203,6 +204,17 @@ export const BookingStoreProvider = ({
               set((s) => {
                 s.user = user;
                 return s;
+              }),
+            reset: () =>
+              set((s) => {
+                return {
+                  ...initialState,
+                  step: "services",
+                  staffId: null,
+                  services: [],
+                  date: new Date(),
+                  beginAt: null,
+                };
               }),
           }))
         )

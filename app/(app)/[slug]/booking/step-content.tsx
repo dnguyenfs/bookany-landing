@@ -4,6 +4,7 @@ import { ChooseDate } from "./choose-date";
 import { Confirm } from "./confirm";
 import { useBookingStore } from "./context";
 import { cn } from "@/lib/utils";
+import { Billing } from "./billing";
 
 export default function StepContent() {
   const step = useBookingStore((s) => s.step);
@@ -27,6 +28,7 @@ export default function StepContent() {
       {step === "staff" && <ChooseStaff />}
       {step === "date" && <ChooseDate />}
       {step === "confirm" && <Confirm />}
+      {step === "billing" && <Billing />}
     </div>
   );
 }
