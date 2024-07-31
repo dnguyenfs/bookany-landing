@@ -6,10 +6,17 @@ import {
   savePhoneNumberApi,
 } from "@/api/auth";
 import {
+  createBookingWithAuthApi,
+  createBookingWithoutAuthApi,
+  ICreateBookingWithAuthProps,
+  ICreateBookingWithoutAuthProps,
+} from "@/api/booking";
+import {
   getTimeSlotsApi,
   IGetTimeSlotProps,
   ITimeSlotRes,
 } from "@/api/time-slots";
+import { IBooking } from "@/types/booking";
 import { IError } from "@/types/error";
 import { IUser } from "@/types/user";
 import { AxiosError } from "axios";
@@ -91,6 +98,46 @@ export async function getTimeSlotsAction(
 ): Promise<[ITimeSlotRes | null, IError]> {
   try {
     const res = await getTimeSlotsApi(props);
+    return [res, null];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return [
+        null,
+        {
+          ...error.response?.data,
+          statusCode: error.response?.status,
+        },
+      ];
+    }
+    throw error;
+  }
+}
+
+export async function createBookingWithoutAuthAction(
+  props: ICreateBookingWithoutAuthProps
+) {
+  try {
+    const res = await createBookingWithoutAuthApi(props);
+    return [res, null];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return [
+        null,
+        {
+          ...error.response?.data,
+          statusCode: error.response?.status,
+        },
+      ];
+    }
+    throw error;
+  }
+}
+
+export async function createBookingWithAuthAction(
+  props: ICreateBookingWithAuthProps
+): Promise<[IBooking | null, IError]> {
+  try {
+    const res = await createBookingWithAuthApi(props);
     return [res, null];
   } catch (error) {
     if (error instanceof AxiosError) {

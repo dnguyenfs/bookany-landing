@@ -24,7 +24,12 @@ import { Button } from "@/components/ui/button";
 import GoogleSVG from "@/public/svg/GoogleSVG";
 import { useGoogleLogin } from "@react-oauth/google";
 import FacebookSVG from "@/public/svg/FacebookSVG";
-import { precheckTokenAction, savePhoneNumberAction } from "./actions";
+import {
+  createBookingWithAuthAction,
+  createBookingWithoutAuthAction,
+  precheckTokenAction,
+  savePhoneNumberAction,
+} from "./actions";
 import { getProfileApi } from "@/api/account";
 import { toast } from "sonner";
 import { addPlus } from "@/lib/utils/phone";
@@ -34,13 +39,13 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { LoaderCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Billing } from "./billing";
 
 const formSchema = z
   .object({
-    firstname: z.string().min(2, {
+    name: z.string().min(2, {
       message: "Username must be at least 2 characters.",
     }),
-    lastname: z.string(),
     phone: z.any(),
     email: z.string().email("Invalid email"),
     note: z.string(),
@@ -66,9 +71,12 @@ export function Confirm() {
   const staffMapping = useBookingStore((s) => s.staffMapping);
   const beginAt = useBookingStore((s) => s.beginAt);
   const user = useBookingStore((s) => s.user);
+  const setStep = useBookingStore((s) => s.setStep);
+  const setBooking = useBookingStore((s) => s.setBooking);
   const setUser = useBookingStore((s) => s.setUser);
   const [openConfirmOtp, setOpenConfirmOtp] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
   const collectPhone = merchant.settings.collectPhone;
@@ -77,14 +85,15 @@ export function Confirm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstname: user?.name ? user.name?.split(" ")[0] : "",
-      lastname: user?.name ? user.name?.split(" ")?.[1] ?? "" : "",
+      name: user?.name ?? "",
       phone: user?.phone ?? "",
       email: user?.email ?? "",
       note: "",
       agreePolicy: true,
     },
   });
+
+  const serviceIds = services.map((service) => service.id);
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -106,8 +115,7 @@ export function Confirm() {
       }
       setUser(user);
       form.setValue("email", user.email);
-      form.setValue("firstname", user.name?.split(" ")[0]);
-      form.setValue("lastname", user.name?.split(" ")?.[1] ?? "");
+      form.setValue("name", user.name ?? "");
     },
     scope: "openid email profile",
   });
@@ -116,12 +124,81 @@ export function Confirm() {
     setOpenConfirmOtp(true);
   }
 
-  const createBooking = () => {
+  const createBooking = async () => {
+    setIsSubmitting(true);
     const values = form.getValues();
     if (!isDesktop) {
       setOpenConfirmOtp(false);
     }
-    console.log("create booking", values);
+
+    if (!beginAt) {
+      toast.info("Missing begin time");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!date) {
+      toast.info("Missing date");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (user && user?.id) {
+      const [res, error] = await createBookingWithAuthAction({
+        slug: merchant.slug,
+        userAgent: navigator.userAgent,
+        body: {
+          staffId: staffId === "_system" ? null : staffId,
+          serviceIds,
+          beginAt,
+          date: format(date, "yyyy-MM-dd"),
+          note: values.note,
+        },
+      });
+
+      if (error) {
+        toast.info(error.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (res) {
+        setBooking(res);
+        setIsSubmitting(false);
+        setStep("billing");
+        return;
+      }
+    } else {
+      const [res, error] = await createBookingWithoutAuthAction({
+        slug: merchant.slug,
+        userAgent: navigator.userAgent,
+        body: {
+          staffId: staffId === "_system" ? null : staffId,
+          serviceIds,
+          beginAt,
+          date: format(date, "yyyy-MM-dd"),
+          note: values.note,
+          client: {
+            name: values.name,
+            phone: values.phone,
+            email: values.email,
+          },
+        },
+      });
+
+      if (error) {
+        toast.info(error.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (res) {
+        setBooking(res);
+        setIsSubmitting(false);
+        setStep("billing");
+        return;
+      }
+    }
   };
 
   const requiredLoginSection = (
@@ -160,6 +237,7 @@ export function Confirm() {
     <>
       <div className="absolute w-full h-full bg-foreground/50"></div>
       <ConfirmOtp
+        isLoading={isSubmitting}
         onAccept={createBooking}
         className="sticky bg-background rounded-t-3xl border bottom-0 left-0 right-0"
       />
@@ -167,7 +245,7 @@ export function Confirm() {
   ) : (
     <Drawer open={openConfirmOtp} onOpenChange={setOpenConfirmOtp}>
       <DrawerContent>
-        <ConfirmOtp onAccept={createBooking} />
+        <ConfirmOtp isLoading={isSubmitting} onAccept={createBooking} />
       </DrawerContent>
     </Drawer>
   );
@@ -212,40 +290,36 @@ export function Confirm() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-2 gap-4 p-4"
+            className="grid grid-cols-1 gap-4 p-4"
           >
             {!requiredAuthenticated ? (
               <>
-                <FormField
-                  control={form.control}
-                  name="firstname"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter first name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastname"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter last name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    disabled={isSubmitting}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client name</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={isSubmitting}
+                            placeholder="Enter first name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <div className="col-span-2">
                   <FormField
                     control={form.control}
                     name="phone"
+                    disabled={isSubmitting}
                     render={({ field }) => (
                       <FormItem className="flex flex-col gap-1">
                         <FormLabel>Phone number</FormLabel>
@@ -271,11 +345,16 @@ export function Confirm() {
                   <FormField
                     control={form.control}
                     name="email"
+                    disabled={isSubmitting}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter email" {...field} />
+                          <Input
+                            disabled={isSubmitting}
+                            placeholder="Enter email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -323,11 +402,13 @@ export function Confirm() {
               <FormField
                 control={form.control}
                 name="agreePolicy"
+                disabled={isSubmitting}
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Switch
+                          disabled={isSubmitting}
                           checked={field.value}
                           id="agree-cancellation-policy"
                         />
@@ -348,11 +429,13 @@ export function Confirm() {
               <FormField
                 control={form.control}
                 name="note"
+                disabled={isSubmitting}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Note</FormLabel>
                     <FormControl>
                       <Textarea
+                        disabled={isSubmitting}
                         rows={4}
                         placeholder="Enter any note"
                         {...field}
@@ -363,7 +446,11 @@ export function Confirm() {
                 )}
               />
             </div>
-            <Button type="submit" className="w-full col-span-2">
+            <Button
+              disabled={isSubmitting}
+              type="submit"
+              className="w-full col-span-2"
+            >
               Submit
             </Button>
           </form>
@@ -390,9 +477,11 @@ export function Confirm() {
 function ConfirmOtp({
   onAccept,
   className,
+  isLoading,
 }: {
   onAccept: () => void;
   className?: string;
+  isLoading: boolean;
 }) {
   const otp = (function () {
     //generate 6 random numbers
@@ -432,8 +521,14 @@ function ConfirmOtp({
           </Badge>
         </div>
       </div>
-      <Button onClick={onAccept} className="w-full" type="button">
-        Confirm
+      <Button
+        disabled={isLoading}
+        onClick={onAccept}
+        className="w-full"
+        type="button"
+      >
+        Confirm{" "}
+        {isLoading && <LoaderCircle className="ml-2 w-5 h-5 animate-spin" />}
       </Button>
     </div>
   );

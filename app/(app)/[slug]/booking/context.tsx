@@ -1,4 +1,5 @@
 import { getShortDate } from "@/lib/datetime";
+import { IBooking } from "@/types/booking";
 import { ICategory } from "@/types/category";
 import { IMerchant } from "@/types/merchant";
 import { IService } from "@/types/service";
@@ -37,6 +38,7 @@ const IInitStates = z.object({
   staffId: z.string().nullable(),
   date: z.date(),
   beginAt: z.number().nullable(),
+  createdBooking: IBooking.nullable(),
 });
 
 type IInitStates = z.infer<typeof IInitStates>;
@@ -51,6 +53,7 @@ type IBookingState = IExternalStates &
     selectDate: (date: Date) => void;
     selectBeginAt: (beginAt: number | null) => void;
     setUser: (user: IUser | null) => void;
+    setBooking: (booking: IBooking | null) => void;
     reset: () => void;
   };
 
@@ -109,6 +112,7 @@ export const BookingStoreProvider = ({
             services: [],
             date: new Date(),
             beginAt: null,
+            createdBooking: null,
             setStep: (step) =>
               set((s) => {
                 s.step = step;
@@ -216,6 +220,11 @@ export const BookingStoreProvider = ({
                 s.user = user;
                 return s;
               }),
+            setBooking: (booking) =>
+              set((s) => {
+                s.createdBooking = booking;
+                return s;
+              }),
             reset: () =>
               set((s) => {
                 return {
@@ -225,6 +234,7 @@ export const BookingStoreProvider = ({
                   services: [],
                   date: new Date(),
                   beginAt: null,
+                  createdBooking: null,
                 };
               }),
           }))
