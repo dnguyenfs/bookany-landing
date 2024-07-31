@@ -78,6 +78,7 @@ export const IMerchant = z.object({
   updatedUserId: z.string(),
   settings: z.object({
     enableOnlineBooking: z.boolean(),
+    enableNoReference: z.boolean(),
     requiredAuthenticated: z.boolean(),
     collectPhone: z.boolean(),
     taxRate: z.number(),

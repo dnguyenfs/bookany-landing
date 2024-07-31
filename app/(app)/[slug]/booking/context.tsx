@@ -78,6 +78,17 @@ export const matchStaffSelector = (state: IBookingState) => {
     return serviceIds.every((serviceId) => staffServiceIds.includes(serviceId));
   });
 };
+export const showNoReferenceSelector = (state: IBookingState) => {
+  const serviceIds = state.services.map((service) => service.id);
+
+  return serviceIds.every((serviceId) => {
+    const service = state.serviceMapping.get(serviceId);
+    const staffIds = service?.serviceStaffs.map(
+      (serviceStaff) => serviceStaff.staffId
+    );
+    return staffIds?.length;
+  });
+};
 
 export const BookingStoreProvider = ({
   children,
