@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import Barcode from "react-barcode";
 import { addPlus } from "@/lib/utils/phone";
 import { formatNumber } from "libphonenumber-js";
+import { IBooking } from "@/types/booking";
+import { convertMinutesToHourMinutes } from "@/lib/datetime";
 
 export function Billing() {
   const merchant = useBookingStore((s) => s.merchant);
@@ -14,38 +16,61 @@ export function Billing() {
   const serviceMapping = useBookingStore((s) => s.serviceMapping);
   const reset = useBookingStore((s) => s.reset);
   const user = useBookingStore((s) => s.user);
+  const createdBooking = useBookingStore((s) => s.createdBooking);
 
   const handleBookAnother = () => {
     reset();
   };
 
+  const totalPrice = createdBooking?.bookingServices.reduce((acc, bkSv) => {
+    return (bkSv.price ?? 0) + acc;
+  }, 0);
+
+  const beginAt =
+    createdBooking?.bookingServices
+      .map((bkSv) => bkSv.beginAt)
+      .sort((a, b) => a - b)[0] ?? 0;
+
   return (
-    <div className="flex flex-col relative p-4 bg-accent h-full gap-6">
+    <div className="flex flex-col relative p-4 bg-accent min-h-full h-auto pb-8 gap-6">
       <div className="flex flex-col gap-4 bg-white shadow-sm rounded-lg p-4">
         <div className="flex flex-col justify-center items-center gap-1">
           <CircleCheckBig className="w-12 h-12 text-green-500" />
           <p className="text-sm text-muted-foreground">
             Transaction successful
           </p>
-          <p className="text-xl font-medium">{merchant.currency}110</p>
+          <p className="text-xl font-medium">
+            {merchant.currency}
+            {totalPrice}
+          </p>
         </div>
         <Separator />
 
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground ">Booked on</p>
-            <p className="text-sm">{format(new Date(), "p - dd/MM/yyyy")}</p>
+            <p className="text-sm">
+              {format(
+                createdBooking?.createdAt ?? new Date(),
+                "p - yyyy-MM-dd"
+              )}
+            </p>
           </div>
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground ">Detail transaction</p>
             <p className="text-sm text-primary cursor-pointer flex items-center hover:underline">
-              6333091218241231 <ChevronRight className="w-4 h-4 inline-block" />
+              {createdBooking?.token}{" "}
+              <ChevronRight className="w-4 h-4 inline-block" />
             </p>
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border">
-          <Barcode fontSize={13} value={"6333091218241231"} height={50} />
+          <Barcode
+            fontSize={13}
+            value={createdBooking?.token ?? ""}
+            height={50}
+          />
         </div>
 
         <Separator />
@@ -63,21 +88,26 @@ export function Billing() {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground ">Name</p>
-            <p className="text-sm font-medium">{user?.name ?? "Walk-in"}</p>
+            <p className="text-sm font-medium">
+              {createdBooking?.name ?? "Walk-in"}
+            </p>
           </div>
 
-          {user?.email && (
+          {createdBooking?.client?.email && (
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="text-sm">{user.email}</p>
+              <p className="text-sm">{createdBooking?.client?.email}</p>
             </div>
           )}
 
-          {user?.phone && (
+          {createdBooking?.client?.phone && (
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">Phone</p>
               <p className="text-sm">
-                {formatNumber(addPlus(user.phone), "INTERNATIONAL")}
+                {formatNumber(
+                  addPlus(createdBooking?.client?.phone),
+                  "INTERNATIONAL"
+                )}
               </p>
             </div>
           )}
@@ -85,22 +115,22 @@ export function Billing() {
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">Begin at</p>
             <p className="text-sm font-medium">
-              {format(new Date(), "p - dd/MM/yyyy")}
+              {convertMinutesToHourMinutes(beginAt, true)} -{" "}
+              {createdBooking?.date.toString()}
             </p>
           </div>
 
           <div className="flex justify-between">
             <p className="text-sm text-muted-foreground">Services</p>
             <p className="text-sm text-right font-medium">
-              {services.map((sv) => {
-                const service = serviceMapping.get(sv.id);
-                if (!service) return null;
-                return (
-                  <li key={sv.id} className="text-sm font-medium">
-                    {service.name}
-                  </li>
-                );
-              })}
+              {services
+                .map((sv) => {
+                  const service = serviceMapping.get(sv.id);
+                  if (!service) return undefined;
+                  return service.name;
+                })
+                .filter(Boolean)
+                .join("/")}
             </p>
           </div>
         </div>

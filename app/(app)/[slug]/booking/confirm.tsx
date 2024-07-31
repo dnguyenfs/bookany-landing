@@ -157,6 +157,9 @@ export function Confirm() {
       });
 
       if (error) {
+        if (error.code === 409) {
+          setUser(null);
+        }
         toast.info(error.message);
         setIsSubmitting(false);
         return;
@@ -264,7 +267,6 @@ export function Confirm() {
                   {service.name} ({service.price}
                   {merchant.currency})
                 </p>
-                {/* <p className="text-sm">(Barber cut, Short/pixie Haircut)</p> */}
               </>
             );
           })}
@@ -305,7 +307,7 @@ export function Confirm() {
                         <FormControl>
                           <Input
                             disabled={isSubmitting}
-                            placeholder="Enter first name"
+                            placeholder="Enter yourname"
                             {...field}
                           />
                         </FormControl>
@@ -447,7 +449,7 @@ export function Confirm() {
               />
             </div>
             <Button
-              disabled={isSubmitting}
+              disabled={isSubmitting || !form.formState.isValid}
               type="submit"
               className="w-full col-span-2"
             >

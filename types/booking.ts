@@ -37,6 +37,7 @@ export const IBooking = z.object({
   acceptedTerm: z.boolean().default(false).optional(),
   remind: z.boolean().default(false).optional(),
   hasReview: z.boolean().default(false).optional(),
+  token: z.string().optional(),
   note: z.string().optional().optional(),
   type: IBookingTypes,
   paid: z.boolean().default(false).optional(),
