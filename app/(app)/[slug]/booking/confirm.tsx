@@ -50,6 +50,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  ICreateBookingWithAuthProps,
+  ICreateBookingWithoutAuthProps,
+} from "@/api/booking";
 
 const formSchema = z
   .object({
@@ -156,16 +160,24 @@ export function Confirm() {
     }
 
     if (user && user?.id) {
+      let body: ICreateBookingWithAuthProps["body"] = {
+        serviceIds,
+        beginAt,
+        date: format(date, "yyyy-MM-dd"),
+        note: values.note,
+      };
+
+      if (staffId !== "_system" && staffId) {
+        body = {
+          ...body,
+          staffId,
+        };
+      }
+
       const [res, error] = await createBookingWithAuthAction({
         slug: merchant.slug,
         userAgent: navigator.userAgent,
-        body: {
-          staffId: staffId === "_system" ? null : staffId,
-          serviceIds,
-          beginAt,
-          date: format(date, "yyyy-MM-dd"),
-          note: values.note,
-        },
+        body,
       });
 
       if (error) {
@@ -191,21 +203,29 @@ export function Confirm() {
         return;
       }
     } else {
+      let body: ICreateBookingWithoutAuthProps["body"] = {
+        serviceIds,
+        beginAt,
+        date: format(date, "yyyy-MM-dd"),
+        note: values.note,
+        client: {
+          name: values.name,
+          phone: values.phone,
+          email: values.email,
+        },
+      };
+
+      if (staffId !== "_system" && staffId) {
+        body = {
+          ...body,
+          staffId,
+        };
+      }
+
       const [res, error] = await createBookingWithoutAuthAction({
         slug: merchant.slug,
         userAgent: navigator.userAgent,
-        body: {
-          staffId: staffId === "_system" ? null : staffId,
-          serviceIds,
-          beginAt,
-          date: format(date, "yyyy-MM-dd"),
-          note: values.note,
-          client: {
-            name: values.name,
-            phone: values.phone,
-            email: values.email,
-          },
-        },
+        body,
       });
 
       if (error) {

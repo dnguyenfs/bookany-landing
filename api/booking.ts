@@ -3,7 +3,7 @@ import { IBooking } from "@/types/booking";
 import { cookies } from "next/headers";
 
 type IBookingWithAuthProps = {
-  staffId: string | null;
+  staffId?: string;
   serviceIds: string[];
   beginAt: number;
   date: string;

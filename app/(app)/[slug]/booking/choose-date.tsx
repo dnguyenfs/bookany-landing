@@ -153,6 +153,7 @@ export function ChooseDate() {
     serviceIds,
     selectDate,
     selectBeginAt,
+    currentDate,
   ]);
 
   const disabledPrevDate = isBefore(ranges[0], new Date());
