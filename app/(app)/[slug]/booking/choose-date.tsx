@@ -106,6 +106,27 @@ export function ChooseDate() {
       }
       if (res) {
         const dates = Object.keys(res);
+
+        const isCurrentDateHaveSlots =
+          res[format(currentDate, "yyyy-MM-dd")]?.slots?.length > 0;
+        const isCurrentDateClosed =
+          res[format(currentDate, "yyyy-MM-dd")]?.isClosed;
+        const ssCurrentDate = new Date(currentDate);
+
+        setRes(res);
+
+        if (
+          isCurrentDateHaveSlots &&
+          !isCurrentDateClosed &&
+          !(
+            isBefore(ssCurrentDate, new Date()) &&
+            !isSameDay(ssCurrentDate, new Date())
+          )
+        ) {
+          setIsFetching(false);
+          return;
+        }
+
         const dateHaveSlots = dates.find((date) => {
           const ssDate = new Date(date);
           return (
@@ -120,8 +141,6 @@ export function ChooseDate() {
           selectDate(new Date(dateHaveSlots));
           selectBeginAt(null);
         }
-
-        setRes(res);
       }
       setIsFetching(false);
     };
