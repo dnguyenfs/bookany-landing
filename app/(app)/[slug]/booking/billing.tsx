@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button";
 import Barcode from "react-barcode";
 import { addPlus } from "@/lib/utils/phone";
 import { formatNumber } from "libphonenumber-js";
-import { IBooking } from "@/types/booking";
 import { convertMinutesToHourMinutes } from "@/lib/datetime";
+import Link from "next/link";
 
 export function Billing() {
   const merchant = useBookingStore((s) => s.merchant);
   const services = useBookingStore((s) => s.services);
   const serviceMapping = useBookingStore((s) => s.serviceMapping);
   const reset = useBookingStore((s) => s.reset);
-  const user = useBookingStore((s) => s.user);
   const createdBooking = useBookingStore((s) => s.createdBooking);
 
   const handleBookAnother = () => {
@@ -58,10 +57,13 @@ export function Billing() {
           </div>
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground ">Detail transaction</p>
-            <p className="text-sm text-primary cursor-pointer flex items-center hover:underline">
+            <Link
+              href={`/x/${createdBooking?.token}`}
+              className="text-sm text-primary cursor-pointer flex items-center hover:underline"
+            >
               {createdBooking?.token}{" "}
               <ChevronRight className="w-4 h-4 inline-block" />
-            </p>
+            </Link>
           </div>
         </div>
 
