@@ -105,13 +105,36 @@ export function ChooseDate() {
         return;
       }
       if (res) {
+        const dates = Object.keys(res);
+        const dateHaveSlots = dates.find((date) => {
+          const ssDate = new Date(date);
+          return (
+            res[date].slots.length > 0 &&
+            res[date].isClosed === false &&
+            !(isBefore(ssDate, new Date()) && !isSameDay(ssDate, new Date()))
+          );
+        });
+
+        if (dateHaveSlots) {
+          setCurrentDate(new Date(dateHaveSlots));
+          selectDate(new Date(dateHaveSlots));
+          selectBeginAt(null);
+        }
+
         setRes(res);
       }
       setIsFetching(false);
     };
 
     fetchTimeSlots();
-  }, [dateRangeString, merchantSlug, staffId, serviceIds]);
+  }, [
+    dateRangeString,
+    merchantSlug,
+    staffId,
+    serviceIds,
+    selectDate,
+    selectBeginAt,
+  ]);
 
   const disabledPrevDate = isBefore(ranges[0], new Date());
 

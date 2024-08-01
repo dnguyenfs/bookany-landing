@@ -36,10 +36,20 @@ import { addPlus } from "@/lib/utils/phone";
 import { formatNumber } from "libphonenumber-js";
 import { useState } from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { LoaderCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Billing } from "./billing";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const formSchema = z
   .object({
@@ -70,6 +80,7 @@ export function Confirm() {
   const serviceMapping = useBookingStore((s) => s.serviceMapping);
   const staffMapping = useBookingStore((s) => s.staffMapping);
   const beginAt = useBookingStore((s) => s.beginAt);
+  const selectBeginAt = useBookingStore((s) => s.selectBeginAt);
   const user = useBookingStore((s) => s.user);
   const setStep = useBookingStore((s) => s.setStep);
   const setBooking = useBookingStore((s) => s.setBooking);
@@ -77,6 +88,7 @@ export function Confirm() {
   const [openConfirmOtp, setOpenConfirmOtp] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConflict, setIsConflict] = useState(false);
 
   const requiredAuthenticated = merchant.settings.requiredAuthenticated;
   const collectPhone = merchant.settings.collectPhone;
@@ -158,8 +170,15 @@ export function Confirm() {
 
       if (error) {
         if (error.code === 409) {
+          setIsConflict(true);
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (error.code === 401) {
           setUser(null);
         }
+
         toast.info(error.message);
         setIsSubmitting(false);
         return;
@@ -202,6 +221,11 @@ export function Confirm() {
         return;
       }
     }
+  };
+
+  const handleBackChooseDate = () => {
+    setStep("date");
+    selectBeginAt(null);
   };
 
   const requiredLoginSection = (
@@ -472,6 +496,32 @@ export function Confirm() {
         ) : null)}
 
       {openConfirmOtp && confirmSmartOtp}
+
+      <AlertDialog
+        open={isConflict}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleBackChooseDate();
+            return;
+          }
+          setIsConflict(open);
+        }}
+      >
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Conflict with existing appointment
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You have already booked an appointment with the same client.
+              Please try another time slot or another date.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -514,7 +564,7 @@ function ConfirmOtp({
               </span>
             ))}
           </div>
-          <LoaderCircle className="absolute right-3 w-8 h-8 text-primary animate-spin" />
+          <LoaderCircle className="absolute right-3 w-8 h-8 text-primary" />
           <Badge
             variant={"outline"}
             className="absolute bg-background w-fit mx-auto -top-3 left-0 right-0"

@@ -56,6 +56,8 @@ export function castMinutesToHoursString(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return hours > 0
-    ? `${hours}hour${hours > 1 ? "s" : ""} ${mins}min${mins > 1 ? "s" : ""}`
+    ? `${hours}hour${hours > 1 ? "s" : ""} ${
+        mins > 0 ? `${mins}min${mins > 1 ? "s" : ""}` : ""
+      }`
     : `${mins}min${mins > 1 ? "s" : ""}`;
 }
