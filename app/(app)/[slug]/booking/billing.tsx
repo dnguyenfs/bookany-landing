@@ -1,7 +1,7 @@
 "use client";
 import { useBookingStore } from "./context";
 import { format } from "date-fns";
-import { ChevronRight, CircleCheckBig } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import Barcode from "react-barcode";
@@ -9,6 +9,7 @@ import { addPlus } from "@/lib/utils/phone";
 import { formatNumber } from "libphonenumber-js";
 import { convertMinutesToHourMinutes } from "@/lib/datetime";
 import Link from "next/link";
+import SuccessSVG from "@/public/svg/SuccessSVG";
 
 export function Billing() {
   const merchant = useBookingStore((s) => s.merchant);
@@ -34,7 +35,7 @@ export function Billing() {
     <div className="flex flex-col relative p-4 bg-accent min-h-full h-auto pb-8 gap-6">
       <div className="flex flex-col gap-4 bg-white shadow-sm rounded-lg p-4">
         <div className="flex flex-col justify-center items-center gap-1">
-          <CircleCheckBig className="w-12 h-12 text-green-500" />
+          <SuccessSVG className="w-20 h-20" />
           <p className="text-sm text-muted-foreground">
             Transaction successful
           </p>
