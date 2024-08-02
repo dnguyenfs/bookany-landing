@@ -188,23 +188,10 @@ export default function DefaultBookingPage({ booking: defaultBooking }: Props) {
             <div className="flex flex-col items-center justify-center gap-2 rounded-lg border">
               <Barcode fontSize={13} value={booking?.token ?? ""} height={50} />
             </div>
-
             <Separator />
-            <div className="flex justify-center items-center gap-3">
-              <Link className="w-full" href={`/${merchant?.slug}/booking`}>
-                <Button className="w-full">Book another appointment</Button>
-              </Link>
-
-              {canCancel && (
-                <Button
-                  onClick={() => setOpenCancel(true)}
-                  className="w-full"
-                  variant={"destructive"}
-                >
-                  Cancel appointment
-                </Button>
-              )}
-            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Thank you for booking with us.
+            </p>
           </div>
 
           <div className="flex flex-col gap-4 bg-white shadow-sm rounded-lg p-4">
@@ -271,6 +258,21 @@ export default function DefaultBookingPage({ booking: defaultBooking }: Props) {
             </p>
           </div>
         </div>
+      </div>
+      <div className="flex justify-between gap-2 p-4  items-center border-t w-full">
+        <Link className="w-full" href={`/${merchant?.slug}/booking`}>
+          <Button className="w-full">Book another appointment</Button>
+        </Link>
+
+        {canCancel && (
+          <Button
+            onClick={() => setOpenCancel(true)}
+            className="w-full"
+            variant={"destructive"}
+          >
+            Cancel appointment
+          </Button>
+        )}
       </div>
       <AlertDialog open={openCancel} onOpenChange={setOpenCancel}>
         <AlertDialogContent className="w-full md:max-w-sm">
