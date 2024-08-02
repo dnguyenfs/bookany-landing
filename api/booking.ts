@@ -59,3 +59,8 @@ export async function createBookingWithAuthApi({
   });
   return res.data;
 }
+
+export async function getBookingByTokenApi(token: string): Promise<IBooking> {
+  const res = await axios.get(`/online/bookings/${token}`);
+  return res.data;
+}

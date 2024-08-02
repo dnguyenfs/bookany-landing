@@ -41,8 +41,6 @@ export default async function BookingPage({ params }: Props) {
     getProfileApi(),
   ]);
 
-  console.log("user", user);
-
   return (
     <Booking
       merchant={merchant}

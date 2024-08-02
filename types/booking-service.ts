@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { IBooking } from "./booking";
+import { IService } from "./service";
 
 export const BookingServiceStates = z.enum([
   "confirmed",
@@ -23,6 +24,7 @@ export const IBookingService = z.object({
   staffId: z.string(),
   bookingId: z.string(),
   merchantId: z.string().optional(),
+  service: IService.optional(),
   createdAt: z.union([z.date(), z.string()]).optional(),
   updatedAt: z.union([z.date(), z.string()]).optional(),
   createdUserId: z.string().optional(),
