@@ -1,27 +1,45 @@
 "use client";
+import {
+  getAlertDialogAction,
+  getAlertDialogContent,
+  getAlertDialogDescription,
+  getAlertDialogFooter,
+  getAlertDialogHeader,
+  getAlertDialogRoot,
+  getAlertDialogTitle,
+} from "@/components/alert-dialog-responsive";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DefaultMerchantOnlineColorHex } from "@/const";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { hexToHSL } from "@/lib/color";
 import { convertMinutesToHourMinutes } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import { addPlus } from "@/lib/utils/phone";
 import { IBooking } from "@/types/booking";
-import { format, isBefore } from "date-fns";
+import { format, isBefore, isSameDay, set } from "date-fns";
 import { formatNumber } from "libphonenumber-js";
 import { LoaderCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Barcode from "react-barcode";
+import { cancelBookingAction } from "./action";
+import { toast } from "sonner";
+import { revalidatePath } from "next/cache";
 
 type Props = {
   booking: IBooking;
 };
 
-export default function DefaultBookingPage({ booking }: Props) {
+export default function DefaultBookingPage({ booking: defaultBooking }: Props) {
+  const [booking, setBooking] = useState<IBooking>(defaultBooking);
+
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [hasHydratedColor, setHasHydratedColor] = useState(false);
   const merchant = booking.merchant;
+  const [openCancel, setOpenCancel] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const merchantHexColor =
     merchant?.settings?.hexColor ?? DefaultMerchantOnlineColorHex;
@@ -58,13 +76,51 @@ export default function DefaultBookingPage({ booking }: Props) {
       .map((bkSv) => bkSv.beginAt)
       .sort((a, b) => a - b)[0] ?? 0;
 
+  const cancelBeforeHours = 2;
+
+  const currentMinutes = new Date().getMinutes();
+
+  const validHoursCancel =
+    isBefore(new Date(), new Date(booking.date)) ||
+    (isSameDay(new Date(), new Date(booking.date)) &&
+      currentMinutes + cancelBeforeHours * 60 < beginAt);
+
   const canCancel =
     (booking.state === "unconfirm" ||
       booking.state === "confirmed" ||
       booking.state === "pending") &&
-    isBefore(new Date(), new Date(booking.date));
+    validHoursCancel;
 
-  const handleCancel = () => {};
+  const AlertDialog = getAlertDialogRoot(isDesktop);
+  const AlertDialogContent = getAlertDialogContent(isDesktop);
+  const AlertDialogHeader = getAlertDialogHeader(isDesktop);
+  const AlertDialogFooter = getAlertDialogFooter(isDesktop);
+  const AlertDialogTitle = getAlertDialogTitle(isDesktop);
+  const AlertDialogDescription = getAlertDialogDescription(isDesktop);
+
+  const handleCancelBooking = async () => {
+    setIsSubmitting(true);
+    if (!booking.token) {
+      toast.info("There was an error cancelling the appointment");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const [res, error] = await cancelBookingAction(
+      booking.token,
+      navigator.userAgent
+    );
+    if (error) {
+      toast.info(error.message);
+      setIsSubmitting(false);
+      return;
+    }
+    if (res) {
+      setBooking(res);
+      setOpenCancel(false);
+      toast.info("Appointment cancelled successfully");
+    }
+  };
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -135,15 +191,13 @@ export default function DefaultBookingPage({ booking }: Props) {
 
             <Separator />
             <div className="flex justify-center items-center gap-3">
-              <Link href={`/${merchant?.slug}/booking`}>
-                <Button className="w-full" variant={"outline"}>
-                  Book another appointment
-                </Button>
+              <Link className="w-full" href={`/${merchant?.slug}/booking`}>
+                <Button className="w-full">Book another appointment</Button>
               </Link>
 
               {canCancel && (
                 <Button
-                  onClick={handleCancel}
+                  onClick={() => setOpenCancel(true)}
                   className="w-full"
                   variant={"destructive"}
                 >
@@ -218,6 +272,32 @@ export default function DefaultBookingPage({ booking }: Props) {
           </div>
         </div>
       </div>
+      <AlertDialog open={openCancel} onOpenChange={setOpenCancel}>
+        <AlertDialogContent className="w-full md:max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel appointment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this appointment? You can't undo
+              this action.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              disabled={isSubmitting}
+              className={cn(
+                "w-full md:w-auto",
+                buttonVariants({ variant: "destructive" })
+              )}
+              onClick={handleCancelBooking}
+            >
+              Continue{" "}
+              {isSubmitting && (
+                <LoaderCircleIcon className="ml-2 w-5 h-5 animate-spin" />
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

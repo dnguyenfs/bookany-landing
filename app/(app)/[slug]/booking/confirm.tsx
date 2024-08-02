@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useBookingStore } from "./context";
 import { format } from "date-fns";
 import { convertMinutesToHourMinutes } from "@/lib/datetime";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import GoogleSVG from "@/public/svg/GoogleSVG";
 import { useGoogleLogin } from "@react-oauth/google";
 import FacebookSVG from "@/public/svg/FacebookSVG";
@@ -40,20 +40,20 @@ import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { LoaderCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   ICreateBookingWithAuthProps,
   ICreateBookingWithoutAuthProps,
 } from "@/api/booking";
+import {
+  getAlertDialogAction,
+  getAlertDialogCancel,
+  getAlertDialogContent,
+  getAlertDialogDescription,
+  getAlertDialogFooter,
+  getAlertDialogHeader,
+  getAlertDialogRoot,
+  getAlertDialogTitle,
+  getAlertDialogTrigger,
+} from "@/components/alert-dialog-responsive";
 
 const formSchema = z
   .object({
@@ -297,6 +297,14 @@ export function Confirm() {
     </Drawer>
   );
 
+  const AlertDialog = getAlertDialogRoot(isDesktop);
+  const AlertDialogContent = getAlertDialogContent(isDesktop);
+  const AlertDialogHeader = getAlertDialogHeader(isDesktop);
+  const AlertDialogFooter = getAlertDialogFooter(isDesktop);
+  const AlertDialogTitle = getAlertDialogTitle(isDesktop);
+  const AlertDialogDescription = getAlertDialogDescription(isDesktop);
+  const AlertDialogAction = getAlertDialogAction(isDesktop);
+
   return (
     <div className="flex flex-col relative">
       <div className="flex flex-col justify-center items-center gap-6 p-4 bg-accent">
@@ -527,7 +535,7 @@ export function Confirm() {
           setIsConflict(open);
         }}
       >
-        <AlertDialogContent className="max-w-sm">
+        <AlertDialogContent className="w-full md:max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle>
               Conflict with existing appointment
@@ -538,7 +546,11 @@ export function Confirm() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction>Continue</AlertDialogAction>
+            <AlertDialogAction
+              className={cn("w-full md:w-auto", !isDesktop && buttonVariants())}
+            >
+              Continue
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

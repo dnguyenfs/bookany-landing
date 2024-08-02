@@ -64,3 +64,15 @@ export async function getBookingByTokenApi(token: string): Promise<IBooking> {
   const res = await axios.get(`/online/bookings/${token}`);
   return res.data;
 }
+
+export async function cancelBookingByTokenApi(
+  token: string,
+  userAgent: string
+): Promise<IBooking> {
+  const res = await axios.post(`/online/bookings/${token}/cancel`, {
+    headers: {
+      "User-Agent": userAgent,
+    },
+  });
+  return res.data;
+}
