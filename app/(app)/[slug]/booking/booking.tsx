@@ -21,6 +21,7 @@ type Props = {
   categories: ICategory[];
   staff: IStaff[];
   user: IUser | null;
+  isInjectLink: boolean;
 };
 
 export default function Booking(props: Props) {

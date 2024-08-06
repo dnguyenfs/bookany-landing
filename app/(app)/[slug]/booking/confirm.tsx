@@ -84,6 +84,7 @@ export function Confirm() {
   const serviceMapping = useBookingStore((s) => s.serviceMapping);
   const staffMapping = useBookingStore((s) => s.staffMapping);
   const beginAt = useBookingStore((s) => s.beginAt);
+  const isInjectLink = useBookingStore((s) => s.isInjectLink);
   const selectBeginAt = useBookingStore((s) => s.selectBeginAt);
   const user = useBookingStore((s) => s.user);
   const setStep = useBookingStore((s) => s.setStep);
@@ -94,9 +95,11 @@ export function Confirm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConflict, setIsConflict] = useState(false);
 
-  const requiredAuthenticated = merchant.settings.requiredAuthenticated;
+  const settingRequiredAuthenticated = merchant.settings.requiredAuthenticated;
   const collectPhone = merchant.settings.collectPhone;
   const slug = merchant.slug;
+
+  const requiredAuthenticated = settingRequiredAuthenticated && !isInjectLink;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -113,6 +116,7 @@ export function Confirm() {
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
+      console.log("tokenResponse", tokenResponse);
       const [res, error] = await precheckTokenAction({
         slug,
         code: tokenResponse.access_token,

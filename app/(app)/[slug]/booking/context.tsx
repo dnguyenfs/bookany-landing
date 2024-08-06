@@ -28,6 +28,7 @@ const IExternalStates = z.object({
   staff: z.array(IStaff),
   serviceMapping: z.map(z.string(), IService),
   staffMapping: z.map(z.string(), IStaff),
+  isInjectLink: z.boolean(),
 });
 
 type IExternalStates = z.infer<typeof IExternalStates>;

@@ -33,7 +33,9 @@ export async function generateMetadata(
   };
 }
 
-export default async function BookingPage({ params }: Props) {
+export default async function BookingPage({ params, searchParams }: Props) {
+  const isInjectLink = typeof searchParams.shared === "string";
+
   const [merchant, categories, staff, user] = await Promise.all([
     getMerchantInfoApi(params.slug),
     getCategoriesApi(params.slug),
@@ -43,6 +45,7 @@ export default async function BookingPage({ params }: Props) {
 
   return (
     <Booking
+      isInjectLink={isInjectLink}
       merchant={merchant}
       categories={categories}
       slug={params.slug}
