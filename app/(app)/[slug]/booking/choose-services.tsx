@@ -8,8 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IService } from "@/types/service";
-import { Check, CheckCircle, CheckIcon, PlusIcon } from "lucide-react";
-import Link from "next/link";
+import { CheckIcon, PlusIcon } from "lucide-react";
 import {
   isSelectedServiceSelector,
   serviceCountByCategoryIdSelector,

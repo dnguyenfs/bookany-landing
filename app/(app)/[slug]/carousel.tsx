@@ -71,7 +71,7 @@ export function MerchantImages({ merchant }: Props) {
               )}
             >
               <Image
-                src={imageUrl}
+                src={imageUrl ?? ""}
                 fill
                 className="w-full h-full top-0 left-0 object-cover"
                 alt="Astronaut in the air"
