@@ -3,8 +3,13 @@ const slug = window.bookany.slug;
 const side = window.bookany.side ?? "left";
 const site_url = `http://localhost:3000`;
 const bookingIframeUrl = `${site_url}/${slug}/booking?shared`;
+const giftIframeUrl = `${site_url}/${slug}/gift?shared`;
 
 function initScript() {
+  if (!slug) {
+    console.log("slug is not defined");
+  }
+
   const sidebar = document.createElement("div");
   sidebar.id = `${appPrefix}-sidebar`;
   document.body.appendChild(sidebar);
@@ -40,6 +45,11 @@ function initScript() {
   sidebar.appendChild(iframe);
 }
 
+function updateIframe(type = "booking") {
+  const iframe = document.getElementById(`${appPrefix}-iframe`);
+  iframe.src = type === "booking" ? bookingIframeUrl : giftIframeUrl;
+}
+
 function captureResizeScreen() {
   window.addEventListener("resize", function () {
     const iframe = document.getElementById(`${appPrefix}-iframe`);
@@ -55,10 +65,11 @@ function captureResizeScreen() {
   });
 }
 
-function toggleBooking() {
+function openContent(type = "booking") {
   const sidebar = document.getElementById(`${appPrefix}-sidebar`);
-  const iframe = document.getElementById(`${appPrefix}-iframe`);
+  updateIframe(type);
 
+  const iframe = document.getElementById(`${appPrefix}-iframe`);
   if (sidebar.style.opacity === `0`) {
     sidebar.style.opacity = 1;
     sidebar.style.pointerEvents = "auto";
@@ -70,18 +81,22 @@ function toggleBooking() {
   if (iframe.style.transform.includes("100%")) {
     iframe.style.transform = `translateX(0px)`;
   } else {
-    iframe.style.transform = `translateX(${side === "left" ? "-100%" : "100%"})`;
+    iframe.style.transform = `translateX(${
+      side === "left" ? "-100%" : "100%"
+    })`;
   }
 }
 
 function clickBackground() {
   const sidebar = document.getElementById(`${appPrefix}-sidebar`);
   sidebar.addEventListener("click", function () {
-    toggleBooking();
+    toggleBooking("booking");
   });
 }
 
 initScript();
 captureResizeScreen();
 clickBackground();
-window.toggleBooking = toggleBooking;
+
+window.toggleBooking = () => openContent("booking");
+window.toggleGift = () => openContent("gift");
