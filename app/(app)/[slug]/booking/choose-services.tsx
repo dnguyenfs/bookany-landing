@@ -8,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IService } from "@/types/service";
-import { CheckIcon, PlusIcon } from "lucide-react";
+import { BellRingIcon, CheckIcon, PlusIcon } from "lucide-react";
 import {
   isSelectedServiceSelector,
   serviceCountByCategoryIdSelector,
@@ -19,6 +19,17 @@ import { cn } from "@/lib/utils";
 
 export function ChooseServices() {
   const categories = useBookingStore((s) => s.categories);
+
+  if (categories.length === 0)
+    return (
+      <div className="flex flex-col gap-2 justify-center items-center h-full p-8 text-center">
+        <BellRingIcon className="w-12 h-12 text-muted-foreground" />
+        <p className="text-sm font-semibold">No services available</p>
+        <p className="text-sm text-muted-foreground">
+          No services available, please contact merchant for this issue.
+        </p>
+      </div>
+    );
 
   return (
     <Accordion
